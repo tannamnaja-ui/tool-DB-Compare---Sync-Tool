@@ -28,6 +28,12 @@ Thumbs.db
 ~$*
 *.tmp
 
+# Build artifacts
+dist/
+build/
+installer_output/
+*.spec.log
+
 # IDE
 .vscode/
 .idea/

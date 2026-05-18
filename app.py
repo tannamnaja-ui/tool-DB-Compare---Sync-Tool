@@ -6,11 +6,25 @@ import json
 import os
 import decimal
 import datetime
+import sys
+
+
+def _resource_path(relative):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative)
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative)
+
+
+def _base_dir():
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.abspath(__file__))
+
 
 MAX_WORKERS = 6  # parallel DB connections per side
 
-app = Flask(__name__)
-CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config.json')
+app = Flask(__name__, template_folder=_resource_path('templates'))
+CONFIG_FILE = os.path.join(_base_dir(), 'config.json')
 MAX_DISPLAY_RECORDS = 500
 
 
