@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DB Compare &amp; Sync Tool</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    html { font-size: 40px; }   /* base 20px → 40px = +100% รอบ 2 */
+    body { background: #f0f2f5; font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+    /* ── inputs / selects: compact height แต่ font โต ── */
+    .form-control, .form-select {
+      font-size: 1rem;
+      padding: .3rem .6rem;
+      height: auto;
+    }
+    label.form-label { font-size: .9rem; margin-bottom: .2rem; }
+
+    /* ── buttons ── */
+    .btn { font-size: .9rem; }
+    .btn-lg { font-size: 1rem; }
+
+    /* ── navbar ── */
+    .navbar-brand { letter-spacing: .5px; font-size: 1.1rem; }
+
+    /* ── cards ── */
+    .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+    .card-header { border-radius: 12px 12px 0 0 !important; font-weight: 600; font-size: .95rem; }
+
+    /* Config cards */
+    .src-header  { background: linear-gradient(135deg,#1565c0,#1976d2); color:#fff; }
+    .dst-header  { background: linear-gradient(135deg,#2e7d32,#388e3c); color:#fff; }
+
+    /* Count boxes */
+    .count-box { border-radius: 10px; padding: 16px; text-align: center; }
+    .count-box .lbl { font-size:.6rem; color:#6c757d; margin-bottom:4px; }
+    .count-box .num { font-size: 1.2rem; font-weight: 700; line-height:1; }
+    .box-src  { background:#e3f2fd; color:#1565c0; }
+    .box-dst  { background:#e8f5e9; color:#2e7d32; }
+    .box-diff { background:#fff3e0; color:#e65100; }
+    .box-ok   { background:#e8f5e9; color:#2e7d32; }
+
+    /* Nav tabs */
+    .nav-tabs .nav-link { color:#495057; font-size:.95rem; }
+    .nav-tabs .nav-link.active { font-weight:700; color:#0d6efd; }
+    .tab-card { border-top-left-radius:0 !important; }
+
+    /* Tables */
+    .table { font-size: .9rem; }
+    .table th { font-size: .825rem; }
+
+    /* Prefix buttons */
+    .prefix-btn { min-width:46px; font-weight:600; font-size:.85rem; }
+    .prefix-btn.active-prefix { background:#212529; color:#fff; border-color:#212529; }
+
+    /* Spinner overlay */
+    #spinner-overlay {
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,.35); z-index:9999;
+      align-items:center; justify-content:center;
+    }
+
+    /* Scrollable table */
+    .scroll-table { max-height:420px; overflow-y:auto; }
+    .scroll-table thead th { position:sticky; top:0; z-index:1; }
+
+    code { font-size:.55rem; }
+    .text-null { color:#adb5bd; font-style:italic; }
+    small, .small { font-size: .55rem; }
+    .text-muted { font-size: .55rem; }
+
+    /* ── Searchable table dropdown ── */
+    .table-search-wrap { position: relative; }
+    .table-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      max-height: 320px;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid #ced4da;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.12);
+      z-index: 1050;
+    }
+    .table-dropdown.open { display: block; }
+    .table-dropdown-item {
+      padding: .45rem .75rem;
+      cursor: pointer;
+      font-size: .85rem;
+      border-bottom: 1px solid #f0f0f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .table-dropdown-item:hover,
+    .table-dropdown-item.active { background: #e9f0ff; color: #0d47a1; }
+    .table-dropdown-item mark {
+      background: #fff176;
+      padding: 0;
+      font-weight: 700;
+      color: inherit;
+    }
+    .table-dropdown-empty {
+      padding: .6rem .75rem;
+      color: #adb5bd;
+      font-size: .8rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Spinner Overlay -->
+<div id="spinner-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:9999; align-items:center; justify-content:center;">
+  <div class="text-center text-white">
+    <div class="spinner-border" style="width:3.5rem;height:3.5rem;"></div>
+    <div class="mt-3 fs-5 fw-semibold">กำลังประมวลผล...</div>
+  </div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar py-3 mb-4" style="background:linear-gradient(135deg,#1a1a2e,#16213e);">
+  <div class="container-fluid">
+    <span class="navbar-brand text-white fw-bold fs-5">
+      <i class="bi bi-database-check me-2"></i>DB Compare &amp; Sync Tool
+    </span>
+  </div>
+</nav>
+
+<div class="container-fluid px-4">
+
+  <!-- ===== CONFIG SECTION ===== -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center"
+         style="background:#212529; color:#fff; border-radius:12px 12px 0 0;">
+      <span><i class="bi bi-gear-fill me-2"></i>ตั้งค่าการเชื่อมต่อ Database</span>
+      <button class="btn btn-sm btn-outline-light"
+              data-bs-toggle="collapse" data-bs-target="#configBody">
+        <i class="bi bi-chevron-expand"></i> แสดง / ซ่อน
+      </button>
+    </div>
+    <div class="collapse show" id="configBody">
+      <div class="card-body">
+        <div class="row g-4">
+
+          <!-- Source -->
+          <div class="col-lg-6">
+            <div class="card h-100">
+              <div class="card-header src-header">
+                <i class="bi bi-database-up me-1"></i> Source Database (ต้นทาง HOSxP V3)
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label class="form-label">ประเภท Database</label>
+                  <select class="form-select" id="src-type" onchange="onTypeChange('src')">
+                    <option value="postgresql">PostgreSQL</option>
+                    <option value="mysql">MySQL</option>
+                  </select>
+                </div>
+                <div class="row g-2 mb-2">
+                  <div class="col-8">
+                    <label class="form-label">IP Server / Hostname</label>
+                    <input type="text" class="form-control" id="src-host" placeholder="localhost">
+                  </div>
+                  <div class="col-4">
+                    <label class="form-label">Port</label>
+                    <input type="number" class="form-control" id="src-port" value="5432">
+                  </div>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Database</label>
+                  <input type="text" class="form-control" id="src-database" placeholder="ชื่อ Database">
+                </div>
+                <div class="row g-2 mb-3">
+                  <div class="col-6">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-control" id="src-username" placeholder="postgres">
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="src-password">
+                  </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                  <button class="btn btn-primary" onclick="testConnection('source')">
+                    <i class="bi bi-plug-fill me-1"></i>ทดสอบการเชื่อมต่อ
+                  </button>
+                  <span id="src-status"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Destination -->
+          <div class="col-lg-6">
+            <div class="card h-100">
+              <div class="card-header dst-header">
+                <i class="bi bi-database-down me-1"></i> Destination Database (ปลายทาง HOSxP XE)
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label class="form-label">ประเภท Database</label>
+                  <select class="form-select" id="dst-type" onchange="onTypeChange('dst')">
+                    <option value="postgresql">PostgreSQL</option>
+                    <option value="mysql">MySQL</option>
+                  </select>
+                </div>
+                <div class="row g-2 mb-2">
+                  <div class="col-8">
+                    <label class="form-label">IP Server / Hostname</label>
+                    <input type="text" class="form-control" id="dst-host" placeholder="localhost">
+                  </div>
+                  <div class="col-4">
+                    <label class="form-label">Port</label>
+                    <input type="number" class="form-control" id="dst-port" value="5432">
+                  </div>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Database</label>
+                  <input type="text" class="form-control" id="dst-database" placeholder="ชื่อ Database">
+                </div>
+                <div class="row g-2 mb-3">
+                  <div class="col-6">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-control" id="dst-username" placeholder="postgres">
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="dst-password">
+                  </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                  <button class="btn btn-success" onclick="testConnection('destination')">
+                    <i class="bi bi-plug-fill me-1"></i>ทดสอบการเชื่อมต่อ
+                  </button>
+                  <span id="dst-status"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /row -->
+
+        <div class="row g-3 mt-2">
+          <div class="col-lg-6 text-center">
+            <button class="btn btn-primary px-4" onclick="saveConfigSide('source')">
+              <i class="bi bi-floppy-fill me-2"></i>บันทึก Source (HOSxP V3)
+            </button>
+            <span id="save-src-status" class="ms-2 fw-semibold"></span>
+          </div>
+          <div class="col-lg-6 text-center">
+            <button class="btn btn-success px-4" onclick="saveConfigSide('destination')">
+              <i class="bi bi-floppy-fill me-2"></i>บันทึก Destination (HOSxP XE)
+            </button>
+            <span id="save-dst-status" class="ms-2 fw-semibold"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /config card -->
+
+  <!-- ===== MAIN TABS ===== -->
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a class="nav-link active px-4 py-2" id="tab1-link" href="#" onclick="showTab(1); return false;">
+        <i class="bi bi-table me-1"></i>เมนู 1 : ตรวจสอบทีละตาราง
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link px-4 py-2" id="tab2-link" href="#" onclick="showTab(2); return false;">
+        <i class="bi bi-collection-fill me-1"></i>เมนู 2 : ตรวจสอบทุกตาราง
+      </a>
+    </li>
+  </ul>
+
+  <!-- ===== TAB 1: Single Table ===== -->
+  <div class="card tab-card" id="tab1-content" style="border-radius:0 12px 12px 12px;">
+    <div class="card-body p-4">
+
+      <!-- Controls -->
+      <div class="row g-3 align-items-end mb-4">
+        <div class="col-md-6">
+          <label class="form-label fw-bold">เลือกตาราง (จาก Source)</label>
+          <div class="table-search-wrap" id="table-search-wrap">
+            <input type="text" class="form-control" id="table-search-input"
+                   placeholder="-- กด โหลดรายการตาราง ก่อน หรือพิมพ์ค้นหา --"
+                   autocomplete="off"
+                   oninput="filterTableList()"
+                   onfocus="openTableDropdown()"
+                   onblur="scheduleCloseDropdown()">
+            <div class="table-dropdown" id="table-dropdown"></div>
+          </div>
+          <!-- hidden value holder -->
+          <input type="hidden" id="table-select">
+        </div>
+        <div class="col-md-3">
+          <button class="btn btn-outline-secondary w-100" onclick="loadTables()">
+            <i class="bi bi-arrow-clockwise me-1"></i>โหลดรายการตาราง
+          </button>
+        </div>
+        <div class="col-md-3">
+          <button class="btn btn-primary w-100 btn-lg" onclick="compareTable()">
+            <i class="bi bi-search me-1"></i>ตรวจสอบตาราง
+          </button>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="compare-results" style="display:none;">
+
+        <!-- Count summary -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <div class="count-box box-src">
+              <div class="lbl"><i class="bi bi-database-up"></i> Source (ต้นทาง)</div>
+              <div class="num" id="src-count">-</div>
+              <div class="lbl mt-1">records</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="count-box box-dst">
+              <div class="lbl"><i class="bi bi-database-down"></i> Destination (ปลายทาง)</div>
+              <div class="num" id="dst-count">-</div>
+              <div class="lbl mt-1">records</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="count-box box-diff" id="diff-box">
+              <div class="lbl"><i class="bi bi-arrow-down-up"></i> ขาดในปลายทาง</div>
+              <div class="num" id="diff-count">-</div>
+              <div class="lbl mt-1">records</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status alert -->
+        <div id="compare-alert" class="mb-3"></div>
+
+        <!-- Missing records -->
+        <div id="missing-section" style="display:none;">
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h5 class="mb-0">
+              <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+              ข้อมูลที่ขาดในปลายทาง
+              <span class="badge bg-danger ms-1" id="missing-badge">0</span>
+            </h5>
+            <div class="d-flex gap-2">
+              <button class="btn btn-danger" id="menu1-col-btn"
+                      onclick="openColumnDetailMenu1()" style="display:none;">
+                <i class="bi bi-layout-three-columns me-1"></i>
+                ตรวจสอบฟิล <span id="menu1-col-count" class="badge bg-white text-danger ms-1"></span>
+              </button>
+              <button class="btn btn-success" id="sync-btn" onclick="syncTable()">
+                <i class="bi bi-cloud-upload-fill me-1"></i>Sync ทั้งหมดไปปลายทาง
+              </button>
+            </div>
+          </div>
+          <div id="sync-result" class="mb-3"></div>
+
+          <div class="scroll-table">
+            <table class="table table-sm table-striped table-hover mb-0">
+              <thead class="table-dark" id="missing-thead"></thead>
+              <tbody id="missing-tbody"></tbody>
+            </table>
+          </div>
+          <div id="truncated-note" class="text-muted small mt-2" style="display:none;"></div>
+        </div>
+
+      </div><!-- /compare-results -->
+    </div>
+  </div><!-- /tab1 -->
+
+  <!-- ===== TAB 2: All Tables by Prefix ===== -->
+  <div class="card tab-card" id="tab2-content"
+       style="display:none; border-radius:0 12px 12px 12px;">
+    <div class="card-body p-4">
+
+      <!-- Header (collapsible) -->
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <div>
+          <h5 class="mb-1 fw-bold" style="font-size:1rem;">
+            <i class="bi bi-alphabet-uppercase me-2"></i>
+            เลือกหมวดอักษรนำหน้าที่จะตรวจสอบ
+          </h5>
+          <!-- Check all tables — อยู่ใต้หัวข้อ -->
+          <div class="d-flex align-items-center gap-2">
+            <div class="form-check mb-0">
+              <input class="form-check-input" type="checkbox" id="chk-all-tables"
+                     onchange="onCheckAllTables()"
+                     style="border:2px solid #856404; width:1em; height:1em;">
+              <label class="form-check-label fw-bold" for="chk-all-tables" style="font-size:.85rem;">
+                <i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i>
+                ตรวจสอบทุกตาราง
+              </label>
+            </div>
+            <span class="text-muted" style="font-size:.75rem;">(กรุณาใช้อย่างระมัดระวัง — อาจใช้เวลานาน)</span>
+          </div>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm flex-shrink-0 ms-3"
+                data-bs-toggle="collapse" data-bs-target="#prefix-controls"
+                id="btn-toggle-controls">
+          <i class="bi bi-chevron-up"></i> ซ่อน
+        </button>
+      </div>
+
+      <div class="collapse show" id="prefix-controls">
+        <div class="d-flex justify-content-between align-items-center mb-2 mt-2">
+          <p class="text-muted mb-0" style="font-size:0.85rem;">
+            เลือกทีละหมวดตัวอักษร เพื่อป้องกัน Server ช้าจากการโหลดข้อมูลมากเกินไป
+          </p>
+          <button class="btn btn-outline-secondary btn-sm flex-shrink-0 ms-3" onclick="loadPrefixes()">
+            <i class="bi bi-arrow-clockwise me-1"></i>โหลดรายการตัวอักษร
+          </button>
+        </div>
+
+        <!-- ปุ่มตัวอักษร — แสดงบรรทัดใหม่ใต้คำอธิบาย -->
+        <div id="prefix-buttons-inline" class="d-flex flex-wrap gap-1 mb-2">
+          <span class="text-muted" style="font-size:0.85rem;">กด "โหลดรายการตัวอักษร" เพื่อเริ่มต้น</span>
+        </div>
+
+        <div id="prefix-buttons" class="d-flex flex-wrap gap-1 mb-3" style="display:none !important;"></div>
+      </div><!-- /prefix-controls -->
+
+      <!-- Checkbox filter — แสดงตลอด ไม่ขึ้นกับผลลัพธ์ -->
+      <div class="form-check mt-2 mb-1">
+        <input class="form-check-input" type="checkbox" id="chk-diff-only" onchange="applyDiffFilter()"
+               style="border:2px solid #000; width:1.1em; height:1.1em;">
+        <label class="form-check-label fw-semibold" for="chk-diff-only" style="font-size:.9rem;">
+          แสดงเฉพาะตารางที่ข้อมูล<span class="text-danger">ไม่เท่ากัน</span>
+        </label>
+      </div>
+
+      <!-- Prefix results -->
+      <div id="prefix-results" style="display:none;" class="mt-2">
+        <div class="d-flex justify-content-end mb-2">
+          <span class="text-muted" id="prefix-summary" style="font-size:0.6em;"></span>
+          <span id="prefix-label" style="display:none;"></span>
+        </div>
+
+        <div class="scroll-table" style="max-height:600px;">
+          <table class="table table-sm table-hover table-bordered mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th class="text-center" style="width:36px; white-space:nowrap;">#</th>
+                <th class="text-center" style="width:20%;">ชื่อตาราง</th>
+                <th class="text-center" style="width:140px; white-space:nowrap;">Src Count</th>
+                <th class="text-center" style="width:140px; white-space:nowrap;">Dst Count</th>
+                <th class="text-center" style="width:110px; white-space:nowrap;">ขาด</th>
+                <th class="text-center" style="width:130px; white-space:nowrap;">สถานะ</th>
+                <th class="text-center" style="width:140px; white-space:nowrap;">Sync</th>
+              </tr>
+            </thead>
+            <tbody id="prefix-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div><!-- /tab2 -->
+
+</div><!-- /container -->
+<div style="height:60px;"></div>
+
+<!-- ===== MODAL: Table Detail ===== -->
+<div class="modal fade" id="tableDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header" style="background:#212529; color:#fff;">
+        <div>
+          <h5 class="modal-title mb-0" id="modal-table-title">ชื่อตาราง</h5>
+          <small id="modal-table-counts" class="opacity-75"></small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-0">
+        <!-- Loading -->
+        <div id="modal-loading" class="text-center py-5">
+          <div class="spinner-border text-primary" style="width:3rem;height:3rem;"></div>
+          <div class="mt-3">กำลังโหลดข้อมูล...</div>
+        </div>
+        <!-- Alert -->
+        <div id="modal-alert" class="px-3 pt-3"></div>
+        <!-- Sync result -->
+        <div id="modal-sync-result" class="px-3"></div>
+        <!-- Records table -->
+        <div id="modal-table-wrap" style="display:none;">
+          <div style="overflow-x:auto; overflow-y:auto; height:calc(100vh - 200px); width:100%;">
+            <table class="table table-sm table-bordered table-hover table-striped mb-0" style="min-width:max-content;">
+              <thead class="table-dark sticky-top" id="modal-thead"></thead>
+              <tbody id="modal-tbody"></tbody>
+            </table>
+          </div>
+          <div id="modal-truncated-note" class="text-muted small px-3 py-2" style="display:none;"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer justify-content-between">
+        <div id="modal-footer-info" class="text-muted small"></div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-success" id="modal-sync-btn" onclick="syncFromModal()" style="display:none;">
+            <i class="bi bi-cloud-upload-fill me-1"></i>Sync ข้อมูลทั้งหมดไปปลายทาง
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: Create Table ===== -->
+<div class="modal fade" id="createTableModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#0d47a1; color:#fff;">
+        <div>
+          <h5 class="modal-title mb-0" id="ct-modal-title">สร้างตาราง</h5>
+          <small class="opacity-75" id="ct-modal-sub"></small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="ct-loading" class="text-center py-4">
+          <div class="spinner-border text-primary"></div>
+          <div class="mt-2">กำลังโหลดโครงสร้างตาราง...</div>
+        </div>
+        <div id="ct-body" style="display:none;">
+          <div id="ct-alert" class="mb-3"></div>
+          <div id="ct-result" class="mb-2"></div>
+
+          <!-- Column preview -->
+          <h6 class="fw-bold mb-2"><i class="bi bi-table me-1"></i>โครงสร้างตาราง (Column)</h6>
+          <div class="table-responsive mb-3">
+            <table class="table table-sm table-bordered mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th>#</th><th>ชื่อฟิล</th><th>Type (ต้นทาง)</th>
+                  <th>Type (ปลายทาง)</th><th>Nullable</th><th>Default</th>
+                </tr>
+              </thead>
+              <tbody id="ct-col-tbody"></tbody>
+            </table>
+          </div>
+
+          <!-- CREATE SQL preview -->
+          <h6 class="fw-bold mb-2"><i class="bi bi-code-square me-1"></i>SQL ที่จะรัน</h6>
+          <textarea id="ct-sql" class="form-control font-monospace mb-1"
+                    rows="10" style="font-size:.75rem; background:#1e1e1e; color:#d4d4d4;"></textarea>
+          <div class="text-muted small">สามารถแก้ไข SQL ก่อนกดสร้างได้</div>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <span class="text-muted small" id="ct-footer-info"></span>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-primary" id="ct-confirm-btn"
+                  onclick="confirmCreateTable()" style="display:none;">
+            <i class="bi bi-database-add me-1"></i>ยืนยันสร้างตาราง
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: Column Detail ===== -->
+<div class="modal fade" id="columnDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable" style="max-width:1040px; width:95vw;">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#4a148c; color:#fff;">
+        <div>
+          <h5 class="modal-title mb-0" id="col-modal-title">ตรวจสอบฟิล</h5>
+          <small id="col-modal-sub" class="opacity-75"></small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="col-modal-loading" class="text-center py-4">
+          <div class="spinner-border text-primary"></div>
+          <div class="mt-2">กำลังตรวจสอบฟิล...</div>
+        </div>
+        <div id="col-modal-body" style="display:none;">
+          <div id="col-modal-alert" class="mb-3"></div>
+          <div id="col-modal-add-result" class="mb-2"></div>
+          <!-- ฟิลที่ขาดในปลายทาง -->
+          <div id="col-missing-section" style="display:none;">
+            <h6 class="fw-bold text-danger mb-2">
+              <i class="bi bi-plus-circle-fill me-1"></i>
+              ฟิลที่มีในต้นทาง แต่ไม่มีในปลายทาง
+            </h6>
+            <div class="table-responsive mb-3">
+              <table class="table table-sm table-bordered mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th><input type="checkbox" id="chk-col-all" onchange="toggleAllCols(this)"> เลือกทั้งหมด</th>
+                    <th>ชื่อฟิล</th>
+                    <th>Type (ต้นทาง)</th>
+                    <th>Type (ปลายทาง)</th>
+                    <th>Nullable</th>
+                    <th>Default</th>
+                  </tr>
+                </thead>
+                <tbody id="col-missing-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <!-- ฟิลที่ปลายทางมีเพิ่ม -->
+          <div id="col-extra-section" style="display:none;">
+            <h6 class="fw-bold text-muted mb-2">
+              <i class="bi bi-info-circle me-1"></i>
+              ฟิลที่มีในปลายทาง แต่ไม่มีในต้นทาง (ไม่ต้องดำเนินการ)
+            </h6>
+            <div class="table-responsive mb-2">
+              <table class="table table-sm table-bordered mb-0">
+                <thead class="table-secondary"><tr><th>ชื่อฟิล</th><th>Type (ปลายทาง)</th></tr></thead>
+                <tbody id="col-extra-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <div class="text-muted small" id="col-modal-footer-info"></div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-primary" id="col-add-btn"
+                  onclick="addSelectedColumns()" style="display:none;">
+            <i class="bi bi-plus-circle-fill me-1"></i>เพิ่มฟิลที่เลือก
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let currentTable = '';
+let currentTab   = 1;
+
+// ─── Spinner ─────────────────────────────────────────────────────────────────
+function showSpinner() { document.getElementById('spinner-overlay').style.display = 'flex'; }
+function hideSpinner() { document.getElementById('spinner-overlay').style.display = 'none'; }
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+function showTab(n) {
+  currentTab = n;
+  document.getElementById('tab1-content').style.display = n === 1 ? '' : 'none';
+  document.getElementById('tab2-content').style.display = n === 2 ? '' : 'none';
+  document.getElementById('tab1-link').classList.toggle('active', n === 1);
+  document.getElementById('tab2-link').classList.toggle('active', n === 2);
+}
+
+// ─── Port default when type changes ──────────────────────────────────────────
+function onTypeChange(side) {
+  const type = document.getElementById(`${side}-type`).value;
+  document.getElementById(`${side}-port`).value = type === 'mysql' ? 3306 : 5432;
+}
+
+// ─── Config helpers ───────────────────────────────────────────────────────────
+function getDbConfig(side) {
+  const p = side === 'source' ? 'src' : 'dst';
+  return {
+    type:     document.getElementById(`${p}-type`).value,
+    host:     document.getElementById(`${p}-host`).value.trim(),
+    port:     parseInt(document.getElementById(`${p}-port`).value) || 5432,
+    database: document.getElementById(`${p}-database`).value.trim(),
+    username: document.getElementById(`${p}-username`).value.trim(),
+    password: document.getElementById(`${p}-password`).value,
+  };
+}
+
+function fillForm(side, cfg) {
+  const p = side === 'source' ? 'src' : 'dst';
+  if (!cfg) return;
+  document.getElementById(`${p}-type`).value     = cfg.type     || 'postgresql';
+  document.getElementById(`${p}-host`).value     = cfg.host     || '';
+  document.getElementById(`${p}-port`).value     = cfg.port     || 5432;
+  document.getElementById(`${p}-database`).value = cfg.database || '';
+  document.getElementById(`${p}-username`).value = cfg.username || '';
+  document.getElementById(`${p}-password`).value = cfg.password || '';
+}
+
+// ─── Load config on start ─────────────────────────────────────────────────────
+async function loadConfig() {
+  try {
+    const res  = await fetch('/api/config');
+    const cfg  = await res.json();
+    fillForm('source',      cfg.source);
+    fillForm('destination', cfg.destination);
+  } catch (e) { /* silent */ }
+}
+
+// ─── Save config (both sides — kept for internal use) ────────────────────────
+async function saveConfig() {
+  const config = {
+    source:      getDbConfig('source'),
+    destination: getDbConfig('destination')
+  };
+  await fetch('/api/config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config)
+  });
+}
+
+// ─── Save config ทีละ side ───────────────────────────────────────────────────
+async function saveConfigSide(side) {
+  const statusId = side === 'source' ? 'save-src-status' : 'save-dst-status';
+  const statusEl = document.getElementById(statusId);
+
+  // โหลด config ปัจจุบันก่อน แล้วอัปเดตเฉพาะ side ที่กด
+  let current = { source: getDbConfig('source'), destination: getDbConfig('destination') };
+  try {
+    const existing = await fetch('/api/config').then(r => r.json());
+    current = existing;
+  } catch (_) {}
+  current[side] = getDbConfig(side);
+
+  statusEl.innerHTML = '<span class="text-muted"><span class="spinner-border spinner-border-sm"></span></span>';
+  try {
+    await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(current)
+    });
+    statusEl.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill"></i> บันทึกสำเร็จ</span>';
+    setTimeout(() => { statusEl.innerHTML = ''; }, 3000);
+  } catch (e) {
+    statusEl.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle-fill"></i> บันทึกไม่สำเร็จ</span>';
+  }
+}
+
+// ─── Test connection ──────────────────────────────────────────────────────────
+async function testConnection(side) {
+  const config   = getDbConfig(side);
+  const statusEl = document.getElementById(side === 'source' ? 'src-status' : 'dst-status');
+  statusEl.innerHTML = '<span class="text-muted"><span class="spinner-border spinner-border-sm"></span> กำลังทดสอบ...</span>';
+  try {
+    const res  = await fetch('/api/test-connection', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config)
+    });
+    const data = await res.json();
+    if (data.status === 'ok') {
+      statusEl.innerHTML = `<span class="text-success"><i class="bi bi-check-circle-fill"></i> ${data.message}</span>`;
+    } else {
+      statusEl.innerHTML = `<span class="text-danger"><i class="bi bi-x-circle-fill"></i> ${data.message}</span>`;
+    }
+  } catch (e) {
+    statusEl.innerHTML = `<span class="text-danger"><i class="bi bi-x-circle-fill"></i> เกิดข้อผิดพลาด: ${e.message}</span>`;
+  }
+}
+
+// ─── Searchable table dropdown state ─────────────────────────────────────────
+let allTables = [];
+let closeTimer = null;
+
+function openTableDropdown() {
+  filterTableList();
+  document.getElementById('table-dropdown').classList.add('open');
+}
+
+function scheduleCloseDropdown() {
+  closeTimer = setTimeout(() => {
+    document.getElementById('table-dropdown').classList.remove('open');
+  }, 200);
+}
+
+function cancelCloseDropdown() {
+  if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+}
+
+function filterTableList() {
+  const q   = document.getElementById('table-search-input').value.trim().toLowerCase();
+  const dd  = document.getElementById('table-dropdown');
+  dd.innerHTML = '';
+
+  const matches = q
+    ? allTables.filter(t => t.toLowerCase().includes(q))
+    : allTables;
+
+  if (matches.length === 0) {
+    dd.innerHTML = `<div class="table-dropdown-empty">${allTables.length === 0 ? 'กด "โหลดรายการตาราง" ก่อน' : 'ไม่พบตารางที่ค้นหา'}</div>`;
+    dd.classList.add('open');
+    return;
+  }
+
+  matches.slice(0, 200).forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'table-dropdown-item';
+
+    // highlight matching text
+    if (q) {
+      const idx = t.toLowerCase().indexOf(q);
+      div.innerHTML = escHtml(t.slice(0, idx))
+        + '<mark>' + escHtml(t.slice(idx, idx + q.length)) + '</mark>'
+        + escHtml(t.slice(idx + q.length));
+    } else {
+      div.textContent = t;
+    }
+
+    div.addEventListener('mousedown', () => {
+      cancelCloseDropdown();
+      selectTable(t);
+    });
+    dd.appendChild(div);
+  });
+
+  if (matches.length > 200) {
+    const note = document.createElement('div');
+    note.className = 'table-dropdown-empty';
+    note.textContent = `แสดง 200 รายการแรก จากทั้งหมด ${matches.length} รายการ`;
+    dd.appendChild(note);
+  }
+
+  dd.classList.add('open');
+}
+
+function selectTable(name) {
+  document.getElementById('table-search-input').value = name;
+  document.getElementById('table-select').value       = name;
+  document.getElementById('table-dropdown').classList.remove('open');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─── Load table list ──────────────────────────────────────────────────────────
+async function loadTables() {
+  showSpinner();
+  try {
+    const res  = await fetch('/api/tables');
+    const data = await res.json();
+    if (data.status === 'error') { alert('โหลดตารางไม่สำเร็จ: ' + data.message); return; }
+
+    allTables = data.tables || [];
+    const input = document.getElementById('table-search-input');
+    input.placeholder = `พิมพ์ค้นหาจาก ${allTables.length} ตาราง...`;
+    input.value = '';
+    document.getElementById('table-select').value = '';
+  } catch (e) {
+    alert('เกิดข้อผิดพลาด: ' + e.message);
+  } finally { hideSpinner(); }
+}
+
+// ─── Compare single table ─────────────────────────────────────────────────────
+async function compareTable() {
+  const tableName = document.getElementById('table-select').value;
+  if (!tableName) { alert('กรุณาเลือกตาราง'); return; }
+  currentTable = tableName;
+
+  document.getElementById('compare-results').style.display = 'none';
+  document.getElementById('missing-section').style.display = 'none';
+  document.getElementById('sync-result').innerHTML = '';
+  showSpinner();
+
+  try {
+    const res  = await fetch('/api/compare-table', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: tableName })
+    });
+    const data = await res.json();
+    if (data.status === 'error') { alert('เกิดข้อผิดพลาด: ' + data.message); return; }
+
+    const alertEl = document.getElementById('compare-alert');
+
+    // กรณีตารางนี้มีที่ต้นทาง แต่ไม่มีที่ปลายทาง
+    if (data.dst_table_missing) {
+      document.getElementById('src-count').textContent  = fmtNum(data.source_count);
+      document.getElementById('dst-count').textContent  = 'ไม่มีตาราง';
+      document.getElementById('diff-count').textContent = '-';
+      document.getElementById('diff-box').className     = 'count-box box-diff';
+      document.getElementById('compare-results').style.display = '';
+      document.getElementById('missing-section').style.display = 'none';
+      alertEl.innerHTML = `<div class="alert alert-secondary border-0" style="background:#f8f9fa;">
+        <i class="bi bi-info-circle-fill me-2 text-secondary"></i>
+        ตาราง <strong>${data.table}</strong> มีอยู่ในต้นทาง (<strong>${fmtNum(data.source_count)}</strong> records)
+        แต่<span class="text-danger fw-semibold">ไม่มีในปลายทาง</span> — ไม่ต้องเปรียบเทียบ
+      </div>`;
+      return;
+    }
+
+    // Counts
+    document.getElementById('src-count').textContent  = fmtNum(data.source_count);
+    document.getElementById('dst-count').textContent  = data.destination_count >= 0
+                                                         ? fmtNum(data.destination_count) : 'N/A';
+    document.getElementById('diff-count').textContent = fmtNum(data.diff);
+    document.getElementById('compare-results').style.display = '';
+
+    // แสดง/ซ่อนปุ่มตรวจสอบฟิล
+    const colBtn1 = document.getElementById('menu1-col-btn');
+    if (data.has_missing_cols && !data.dst_table_missing) {
+      colBtn1.style.display = '';
+      document.getElementById('menu1-col-count').textContent = data.missing_col_count;
+    } else {
+      colBtn1.style.display = 'none';
+    }
+
+    if (data.warning) {
+      alertEl.innerHTML = `<div class="alert alert-warning"><i class="bi bi-exclamation-triangle-fill me-2"></i>${data.warning}</div>`;
+    } else if (data.source_count === data.destination_count) {
+      document.getElementById('diff-box').className = 'count-box box-ok';
+      alertEl.innerHTML = '<div class="alert alert-success"><i class="bi bi-check-circle-fill me-2"></i>ข้อมูลเท่ากัน ไม่มีรายการที่ขาด</div>';
+    } else if (data.source_count > data.destination_count) {
+      document.getElementById('diff-box').className = 'count-box box-diff';
+      alertEl.innerHTML = `<div class="alert alert-warning"><i class="bi bi-exclamation-triangle-fill me-2"></i>พบข้อมูลที่ขาดในปลายทาง <strong>${fmtNum(data.total_missing)}</strong> รายการ</div>`;
+
+      if (data.missing_records && data.missing_records.length > 0) {
+        document.getElementById('missing-section').style.display = '';
+        document.getElementById('missing-badge').textContent = fmtNum(data.total_missing);
+        renderMissingTable(data.columns, data.missing_records);
+
+        const noteEl = document.getElementById('truncated-note');
+        if (data.total_missing > data.missing_records.length) {
+          noteEl.style.display = '';
+          noteEl.textContent = `* แสดงเฉพาะ ${fmtNum(data.missing_records.length)} รายการแรก จากทั้งหมด ${fmtNum(data.total_missing)} รายการ — การ Sync จะดำเนินการทั้งหมด`;
+        } else { noteEl.style.display = 'none'; }
+      }
+    } else {
+      alertEl.innerHTML = '<div class="alert alert-info"><i class="bi bi-info-circle-fill me-2"></i>ปลายทางมีข้อมูลมากกว่า ไม่จำเป็นต้อง Sync</div>';
+    }
+  } catch (e) {
+    alert('เกิดข้อผิดพลาด: ' + e.message);
+  } finally { hideSpinner(); }
+}
+
+function renderMissingTable(cols, records) {
+  const thead = document.getElementById('missing-thead');
+  const tbody = document.getElementById('missing-tbody');
+
+  const hRow = document.createElement('tr');
+  cols.forEach(c => {
+    const th = document.createElement('th');
+    th.textContent = c;
+    hRow.appendChild(th);
+  });
+  thead.innerHTML = '';
+  thead.appendChild(hRow);
+
+  tbody.innerHTML = '';
+  records.forEach(rec => {
+    const tr = document.createElement('tr');
+    cols.forEach(c => {
+      const td = document.createElement('td');
+      const v  = rec[c];
+      if (v === null || v === undefined) {
+        td.innerHTML = '<span class="text-null">NULL</span>';
+      } else {
+        td.textContent = String(v);
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+// ─── Sync table ───────────────────────────────────────────────────────────────
+async function syncTable() {
+  if (!currentTable) return;
+  if (!confirm(`ต้องการ Sync ข้อมูลของตาราง "${currentTable}" ไปยังปลายทางใช่หรือไม่?\nการดำเนินการนี้จะเพิ่ม record ที่ขาดเข้าไปในปลายทาง`)) return;
+
+  showSpinner();
+  const btn = document.getElementById('sync-btn');
+  btn.disabled = true;
+
+  try {
+    const res  = await fetch('/api/sync-table', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: currentTable })
+    });
+    const data = await res.json();
+    const resEl = document.getElementById('sync-result');
+
+    if (data.status === 'ok') {
+      resEl.innerHTML = `<div class="alert alert-success"><i class="bi bi-check-circle-fill me-2"></i>${data.message}</div>`;
+      setTimeout(() => compareTable(), 1200);
+    } else {
+      resEl.innerHTML = `<div class="alert alert-danger"><i class="bi bi-x-circle-fill me-2"></i>${data.message}</div>`;
+    }
+
+    resEl.innerHTML += buildErrorHtml(data);
+  } catch (e) {
+    document.getElementById('sync-result').innerHTML =
+      `<div class="alert alert-danger">เกิดข้อผิดพลาด: ${e.message}</div>`;
+  } finally {
+    hideSpinner();
+    btn.disabled = false;
+  }
+}
+
+// ─── Menu 2: toggle collapse label ───────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const el = document.getElementById('prefix-controls');
+  if (el) {
+    el.addEventListener('show.bs.collapse',   () => {
+      document.getElementById('btn-toggle-controls').innerHTML = '<i class="bi bi-chevron-up"></i> ซ่อน';
+    });
+    el.addEventListener('hidden.bs.collapse', () => {
+      document.getElementById('btn-toggle-controls').innerHTML = '<i class="bi bi-chevron-down"></i> แสดง';
+    });
+  }
+});
+
+// ─── Menu 2: Check all tables ─────────────────────────────────────────────────
+async function onCheckAllTables() {
+  const checked = document.getElementById('chk-all-tables').checked;
+  if (!checked) return;
+
+  if (!confirm('ต้องการตรวจสอบทุกตารางใน Database ใช่หรือไม่?\nอาจใช้เวลานานขึ้นอยู่กับจำนวนตาราง')) {
+    document.getElementById('chk-all-tables').checked = false;
+    return;
+  }
+
+  // ปิด header ให้อัตโนมัติ
+  const collapseEl = document.getElementById('prefix-controls');
+  const bsCollapse = bootstrap.Collapse.getOrCreateInstance(collapseEl);
+  bsCollapse.hide();
+
+  // clear active prefix button
+  document.querySelectorAll('.prefix-btn').forEach(b => {
+    b.classList.remove('active-prefix', 'btn-dark');
+    b.classList.add('btn-outline-dark');
+  });
+
+  showSpinner();
+  document.getElementById('prefix-results').style.display = 'none';
+
+  try {
+    const res  = await fetch('/api/compare-by-prefix', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefix: '' })   // ไม่ filter ตัวอักษร
+    });
+    const data = await res.json();
+    if (data.status === 'error') { alert('เกิดข้อผิดพลาด: ' + data.message); return; }
+
+    const results = data.results || [];
+    const okCnt   = results.filter(r => r.status === 'ok').length;
+    const diffCnt = results.filter(r => r.status === 'diff').length;
+    const misCnt  = results.filter(r => r.status === 'missing').length;
+
+    document.getElementById('prefix-label').textContent = 'ทุกตาราง';
+    document.getElementById('prefix-summary').textContent =
+      `ทั้งหมด ${results.length} ตาราง  |  เท่ากัน: ${okCnt}  |  ต่างกัน: ${diffCnt}  |  ไม่มีในปลายทาง: ${misCnt}`;
+
+    prefixResults = results;
+
+    // ถ้า checkbox แสดงเฉพาะไม่เท่ากันถูกติ๊กอยู่ → filter ทันที
+    const diffOnly = document.getElementById('chk-diff-only').checked;
+    renderPrefixRows(diffOnly ? prefixResults.filter(r => r.status !== 'ok') : prefixResults);
+
+    document.getElementById('prefix-results').style.display = '';
+  } catch (e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
+  finally { hideSpinner(); }
+}
+
+// ─── Menu 2: Load prefixes ────────────────────────────────────────────────────
+async function loadPrefixes() {
+  showSpinner();
+  try {
+    const res  = await fetch('/api/tables');
+    const data = await res.json();
+    if (data.status === 'error') { alert('โหลดไม่สำเร็จ: ' + data.message); return; }
+
+    const container = document.getElementById('prefix-buttons-inline');
+    container.innerHTML = '';
+    const prefixes = data.prefixes || [];
+
+    if (prefixes.length === 0) {
+      container.innerHTML = '<span class="text-muted">ไม่พบตารางใน Database</span>';
+      return;
+    }
+
+    prefixes.forEach(p => {
+      const btn = document.createElement('button');
+      btn.className   = 'btn btn-outline-dark prefix-btn';
+      btn.style.marginRight = '3px';
+      btn.style.marginBottom = '3px';
+      btn.textContent = p;
+      btn.onclick     = () => compareByPrefix(p);
+      container.appendChild(btn);
+    });
+  } catch (e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
+  finally { hideSpinner(); }
+}
+
+// ─── Menu 2: Compare by prefix ───────────────────────────────────────────────
+async function compareByPrefix(prefix) {
+  // Highlight active button
+  document.querySelectorAll('.prefix-btn').forEach(b => {
+    b.classList.remove('active-prefix', 'btn-dark');
+    b.classList.add('btn-outline-dark');
+  });
+  const activeBtn = [...document.querySelectorAll('.prefix-btn')]
+                     .find(b => b.textContent === prefix);
+  if (activeBtn) {
+    activeBtn.classList.add('active-prefix', 'btn-dark');
+    activeBtn.classList.remove('btn-outline-dark');
+  }
+
+  showSpinner();
+  document.getElementById('prefix-results').style.display = 'none';
+
+  try {
+    const res  = await fetch('/api/compare-by-prefix', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefix })
+    });
+    const data = await res.json();
+    if (data.status === 'error') { alert('เกิดข้อผิดพลาด: ' + data.message); return; }
+
+    const results = data.results || [];
+    const okCnt   = results.filter(r => r.status === 'ok').length;
+    const diffCnt = results.filter(r => r.status === 'diff').length;
+    const misCnt  = results.filter(r => r.status === 'missing').length;
+
+    document.getElementById('prefix-label').textContent   = prefix + '...';
+    document.getElementById('prefix-summary').textContent =
+      `ทั้งหมด ${results.length} ตาราง  |  เท่ากัน: ${okCnt}  |  ต่างกัน: ${diffCnt}  |  ไม่มีในปลายทาง: ${misCnt}`;
+
+    prefixResults = results;
+    const diffOnly = document.getElementById('chk-diff-only').checked;
+    renderPrefixRows(diffOnly ? prefixResults.filter(r => r.status !== 'ok') : prefixResults);
+    document.getElementById('prefix-results').style.display = '';
+  } catch (e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
+  finally { hideSpinner(); }
+}
+
+// ─── Prefix results state & render ───────────────────────────────────────────
+let prefixResults = [];
+
+function applyDiffFilter() {
+  const diffOnly = document.getElementById('chk-diff-only').checked;
+  const rows = diffOnly ? prefixResults.filter(r => r.status !== 'ok') : prefixResults;
+  renderPrefixRows(rows);
+}
+
+function renderPrefixRows(rows) {
+  const tbody = document.getElementById('prefix-tbody');
+  tbody.innerHTML = '';
+
+  rows.forEach((r, i) => {
+    const tr = document.createElement('tr');
+
+    // src > dst = diff (แดง+Sync), src < dst = destMore (ม่วง ไม่มี Sync)
+    const srcMore = r.status === 'diff' && r.diff > 0;
+    const dstMore = r.status === 'diff' && r.diff < 0;
+
+    if (r.status === 'ok') {
+      tr.style.color = '#1b5e20';                        // เขียวเข้ม
+    } else if (srcMore) {
+      tr.style.color      = '#b71c1c';                   // แดงเข้ม — ต้นทางมากกว่า
+      tr.style.fontWeight = 'bold';
+    } else if (dstMore) {
+      tr.style.color      = '#4a148c';                   // ม่วงเข้ม — ปลายทางมากกว่า
+      tr.style.fontWeight = 'bold';
+    } else {
+      tr.classList.add('table-secondary');               // missing — เทา
+    }
+
+    const badge = r.status === 'ok'
+      ? '<span class="badge bg-success">เท่ากัน</span>'
+      : r.status === 'missing'
+      ? '<span class="badge bg-secondary" title="ต้นทางมี / ปลายทางไม่มีตาราง"><i class="bi bi-exclamation-circle"></i> ไม่มีตาราง</span>'
+      : srcMore
+        ? '<span class="badge bg-danger">ต่างกัน</span>'
+        : '<span class="badge" style="background:#4a148c;">ปลายทางมากกว่า</span>';
+
+    const srcCnt = r.source_count >= 0 ? fmtNum(r.source_count) : '-';
+    const dstCnt = r.destination_count >= 0
+      ? fmtNum(r.destination_count)
+      : '<span class="fst-italic" style="color:#888;">ไม่มีตาราง</span>';
+    const diff = r.status === 'missing'
+      ? '<span style="color:#888;">-</span>'
+      : r.diff > 0
+        ? `<span class="fw-bold" style="color:#b71c1c;">+${fmtNum(r.diff)}</span>`
+        : r.diff < 0
+          ? `<span class="fw-bold" style="color:#4a148c;">${fmtNum(r.diff)}</span>`
+          : '<span style="color:#1b5e20;">0</span>';
+
+    const tdName = document.createElement('td');
+    if (srcMore) {
+      tdName.innerHTML = `<a href="#" style="font-family:'Courier New',monospace;color:inherit;text-decoration:underline dotted;cursor:pointer;"
+        onclick="openTableDetail('${escHtml(r.table)}');return false;">${escHtml(r.table)}</a>`;
+    } else {
+      tdName.innerHTML = `<span style="font-family:'Courier New',monospace;color:inherit;">${escHtml(r.table)}</span>`;
+    }
+
+    // Sync cell — Sync เฉพาะ srcMore, ตรวจสอบฟิลสำหรับทุกตารางที่มีในปลายทาง
+    const tdSync = document.createElement('td');
+    tdSync.className = 'text-center';
+    tdSync.id = `sync-cell-${r.table}`;
+
+    if (srcMore) {
+      const btn = document.createElement('button');
+      btn.className   = 'btn btn-sm btn-warning';
+      btn.style.color = '#000';
+      btn.style.fontWeight = 'normal';
+      btn.innerHTML   = '<i class="bi bi-cloud-upload-fill me-1"></i>Sync';
+      btn.onclick     = () => syncPrefixTable(r.table, btn);
+      tdSync.appendChild(btn);
+    }
+
+    if (r.status === 'missing') {
+      const createBtn = document.createElement('button');
+      createBtn.className = 'btn btn-sm btn-primary';
+      createBtn.style.fontWeight = 'normal';
+      createBtn.innerHTML = '<i class="bi bi-database-add me-1"></i>สร้างตาราง';
+      createBtn.id        = `create-btn-${r.table}`;
+      createBtn.onclick   = () => openCreateTable(r.table);
+      tdSync.appendChild(createBtn);
+    }
+
+    if (r.has_missing_cols) {
+      const colBtn = document.createElement('button');
+      colBtn.className = 'btn btn-sm btn-danger ms-1';
+      colBtn.style.fontWeight = 'normal';
+      colBtn.title     = `พบ ${r.missing_col_count} ฟิลที่ขาดในปลายทาง`;
+      colBtn.innerHTML = `<i class="bi bi-layout-three-columns me-1"></i>ตรวจสอบฟิล (${r.missing_col_count})`;
+      colBtn.id        = `col-btn-${r.table}`;
+      colBtn.onclick   = () => openColumnDetail(r.table);
+      tdSync.appendChild(colBtn);
+    }
+
+    tr.innerHTML = `<td>${i + 1}</td>`;
+    tr.appendChild(tdName);
+    tr.insertAdjacentHTML('beforeend',
+      `<td class="text-end">${srcCnt}</td>
+       <td class="text-end">${dstCnt}</td>
+       <td class="text-end">${diff}</td>
+       <td class="text-center">${badge}</td>`);
+    tr.appendChild(tdSync);
+    tbody.appendChild(tr);
+  });
+}
+
+// ─── Modal: Table Detail ─────────────────────────────────────────────────────
+let modalTableName = '';
+
+async function openTableDetail(tableName) {
+  modalTableName = tableName;
+
+  // Reset modal state  [fetch_all=true]
+  document.getElementById('modal-table-title').textContent  = tableName;
+  document.getElementById('modal-table-counts').textContent = '';
+  document.getElementById('modal-alert').innerHTML          = '';
+  document.getElementById('modal-sync-result').innerHTML    = '';
+  document.getElementById('modal-footer-info').textContent  = '';
+  document.getElementById('modal-loading').style.display    = '';
+  document.getElementById('modal-table-wrap').style.display = 'none';
+  document.getElementById('modal-sync-btn').style.display   = 'none';
+  document.getElementById('modal-truncated-note').style.display = 'none';
+  document.getElementById('modal-sync-btn').disabled = false;
+
+  const modal = new bootstrap.Modal(document.getElementById('tableDetailModal'));
+  modal.show();
+
+  try {
+    const res  = await fetch('/api/compare-table', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: tableName, fetch_all: true })
+    });
+    const data = await res.json();
+
+    document.getElementById('modal-loading').style.display = 'none';
+
+    if (data.status === 'error') {
+      document.getElementById('modal-alert').innerHTML =
+        `<div class="alert alert-danger">${data.message}</div>`;
+      return;
+    }
+
+    if (data.dst_table_missing) {
+      document.getElementById('modal-alert').innerHTML =
+        `<div class="alert alert-secondary">ตาราง <strong>${tableName}</strong> ไม่มีในปลายทาง</div>`;
+      return;
+    }
+
+    document.getElementById('modal-table-counts').textContent =
+      `Source: ${fmtNum(data.source_count)} | Destination: ${fmtNum(data.destination_count)} | ขาด: ${fmtNum(data.total_missing)}`;
+
+    if (data.warning) {
+      document.getElementById('modal-alert').innerHTML =
+        `<div class="alert alert-warning">${data.warning}</div>`;
+      return;
+    }
+
+    if (data.source_count <= data.destination_count) {
+      document.getElementById('modal-alert').innerHTML =
+        `<div class="alert alert-info">ข้อมูลเท่ากันหรือปลายทางมากกว่า ไม่มีข้อมูลที่ต้องเพิ่ม</div>`;
+      return;
+    }
+
+    if (!data.missing_records || data.missing_records.length === 0) {
+      document.getElementById('modal-alert').innerHTML =
+        `<div class="alert alert-success">ไม่พบ record ที่ขาด</div>`;
+      return;
+    }
+
+    // Render missing records
+    renderModalTable(data.columns, data.missing_records);
+    document.getElementById('modal-table-wrap').style.display = '';
+    document.getElementById('modal-sync-btn').style.display   = '';
+    document.getElementById('modal-footer-info').textContent  =
+      `แสดง ${fmtNum(data.missing_records.length)} จากทั้งหมด ${fmtNum(data.total_missing)} รายการ`;
+
+    if (data.total_missing > data.missing_records.length) {
+      const noteEl = document.getElementById('modal-truncated-note');
+      noteEl.style.display = '';
+      noteEl.textContent =
+        `* แสดงเฉพาะ ${fmtNum(data.missing_records.length)} รายการแรก — การ Sync จะดำเนินการทั้งหมด ${fmtNum(data.total_missing)} รายการ`;
+    }
+
+  } catch (e) {
+    document.getElementById('modal-loading').style.display = 'none';
+    document.getElementById('modal-alert').innerHTML =
+      `<div class="alert alert-danger">เกิดข้อผิดพลาด: ${e.message}</div>`;
+  }
+}
+
+function renderModalTable(cols, records) {
+  const thead = document.getElementById('modal-thead');
+  const tbody = document.getElementById('modal-tbody');
+
+  const hRow = document.createElement('tr');
+  cols.forEach(c => {
+    const th = document.createElement('th');
+    th.textContent = c;
+    hRow.appendChild(th);
+  });
+  thead.innerHTML = '';
+  thead.appendChild(hRow);
+
+  tbody.innerHTML = '';
+  records.forEach(rec => {
+    const tr = document.createElement('tr');
+    cols.forEach(c => {
+      const td = document.createElement('td');
+      const v  = rec[c];
+      if (v === null || v === undefined) {
+        td.innerHTML = '<span class="text-null">NULL</span>';
+      } else {
+        td.textContent = String(v);
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+async function syncFromModal() {
+  if (!modalTableName) return;
+  if (!confirm(`ต้องการ Sync ตาราง "${modalTableName}" ไปยังปลายทางใช่หรือไม่?`)) return;
+
+  const btn    = document.getElementById('modal-sync-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>กำลัง Sync...';
+
+  try {
+    const res  = await fetch('/api/sync-table', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: modalTableName })
+    });
+    const data = await res.json();
+    const resEl = document.getElementById('modal-sync-result');
+
+    if (data.status === 'ok') {
+      const statusClass = data.total_errors > 0 ? 'alert-warning' : 'alert-success';
+      const icon = data.total_errors > 0 ? 'bi-exclamation-triangle-fill' : 'bi-check-circle-fill';
+      resEl.innerHTML =
+        `<div class="alert ${statusClass} mx-3 mt-2"><i class="bi ${icon} me-1"></i>${data.message}</div>`;
+      resEl.innerHTML += buildErrorHtml(data);
+
+      if (data.inserted > 0) {
+        btn.style.display = 'none';
+        const rec = prefixResults.find(r => r.table === modalTableName);
+        if (rec) { rec.status = 'ok'; rec.diff = 0; rec.destination_count = rec.source_count; }
+        const cell = document.getElementById(`sync-cell-${modalTableName}`);
+        if (cell) cell.innerHTML =
+          `<span class="text-success fw-normal"><i class="bi bi-check-circle-fill me-1"></i>${data.inserted} รายการ</span>`;
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-cloud-upload-fill me-1"></i>Sync ข้อมูลทั้งหมดไปปลายทาง';
+      }
+    } else {
+      resEl.innerHTML =
+        `<div class="alert alert-danger mx-3 mt-2"><i class="bi bi-x-circle-fill me-1"></i>${data.message}</div>`;
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-cloud-upload-fill me-1"></i>Sync ข้อมูลทั้งหมดไปปลายทาง';
+    }
+  } catch (e) {
+    document.getElementById('modal-sync-result').innerHTML =
+      `<div class="alert alert-danger mx-3 mt-2">เกิดข้อผิดพลาด: ${e.message}</div>`;
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-cloud-upload-fill me-1"></i>Sync ข้อมูลทั้งหมดไปปลายทาง';
+  }
+}
+
+// ─── Menu 2: Sync single table ────────────────────────────────────────────────
+async function syncPrefixTable(tableName, btn) {
+  if (!confirm(`ต้องการ Sync ตาราง "${tableName}" ไปยังปลายทางใช่หรือไม่?`)) return;
+
+  btn.disabled  = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลัง Sync...';
+
+  const cell = document.getElementById(`sync-cell-${tableName}`);
+
+  try {
+    const res  = await fetch('/api/sync-table', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: tableName })
+    });
+    const data = await res.json();
+
+    if (data.status === 'ok') {
+      cell.innerHTML = `<span class="text-success fw-normal"><i class="bi bi-check-circle-fill me-1"></i>${data.inserted} รายการ</span>`;
+      // อัปเดต prefixResults และ re-render แถวนั้น
+      const rec = prefixResults.find(r => r.table === tableName);
+      if (rec) { rec.status = 'ok'; rec.diff = 0; rec.destination_count = rec.source_count; }
+    } else {
+      cell.innerHTML = `<span class="text-danger fw-normal small"><i class="bi bi-x-circle-fill me-1"></i>${data.message}</span>`;
+    }
+  } catch (e) {
+    cell.innerHTML = `<span class="text-danger fw-normal small">เกิดข้อผิดพลาด</span>`;
+  }
+}
+
+// ─── Menu 1: column check button ─────────────────────────────────────────────
+function openColumnDetailMenu1() {
+  if (currentTable) openColumnDetail(currentTable);
+}
+
+// ─── Create Table ─────────────────────────────────────────────────────────────
+let createTableName = '';
+
+async function openCreateTable(tableName) {
+  createTableName = tableName;
+
+  document.getElementById('ct-modal-title').textContent = `สร้างตาราง: ${tableName}`;
+  document.getElementById('ct-modal-sub').textContent   = '';
+  document.getElementById('ct-loading').style.display   = '';
+  document.getElementById('ct-body').style.display      = 'none';
+  document.getElementById('ct-alert').innerHTML         = '';
+  document.getElementById('ct-result').innerHTML        = '';
+  document.getElementById('ct-confirm-btn').style.display = 'none';
+  document.getElementById('ct-confirm-btn').disabled    = false;
+  document.getElementById('ct-confirm-btn').innerHTML   =
+    '<i class="bi bi-database-add me-1"></i>ยืนยันสร้างตาราง';
+  document.getElementById('ct-footer-info').textContent = '';
+
+  const modal = new bootstrap.Modal(document.getElementById('createTableModal'));
+  modal.show();
+
+  try {
+    const res  = await fetch('/api/get-table-structure', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: tableName })
+    });
+    const data = await res.json();
+
+    document.getElementById('ct-loading').style.display = 'none';
+    document.getElementById('ct-body').style.display    = '';
+
+    if (data.status === 'error') {
+      document.getElementById('ct-alert').innerHTML =
+        `<div class="alert alert-danger">${data.message}</div>`;
+      return;
+    }
+
+    document.getElementById('ct-modal-sub').textContent =
+      `ต้นทาง (${data.src_type.toUpperCase()}) → ปลายทาง (${data.dst_type.toUpperCase()})`;
+    document.getElementById('ct-footer-info').textContent =
+      `${data.columns.length} ฟิล  |  Primary Key: ${data.primary_keys.join(', ') || '-'}`;
+
+    // Column table
+    const tbody = document.getElementById('ct-col-tbody');
+    tbody.innerHTML = '';
+    data.columns.forEach((col, i) => {
+      const dstType = data.dst_type === 'postgresql'
+        ? escHtml(col.type_raw)   // already mapped in backend
+        : escHtml(col.type_raw);
+      const isPK = data.primary_keys.includes(col.column);
+      tbody.innerHTML += `<tr${isPK ? ' class="table-warning"' : ''}>
+        <td class="text-center">${i + 1}</td>
+        <td><code>${escHtml(col.column)}</code>${isPK ? ' <span class="badge bg-warning text-dark">PK</span>' : ''}</td>
+        <td><code class="text-primary">${escHtml(col.type_raw)}</code></td>
+        <td><code class="text-success" id="ct-dst-type-${i}"></code></td>
+        <td class="text-center">${col.nullable ? 'YES' : '<span class="text-danger fw-bold">NO</span>'}</td>
+        <td>${col.default !== null ? escHtml(String(col.default)) : '<span class="text-muted">-</span>'}</td>
+      </tr>`;
+    });
+
+    // SQL preview — parse from create_sql to fill dst type column
+    document.getElementById('ct-sql').value = data.create_sql;
+    document.getElementById('ct-confirm-btn').style.display = '';
+
+  } catch (e) {
+    document.getElementById('ct-loading').style.display = 'none';
+    document.getElementById('ct-body').style.display    = '';
+    document.getElementById('ct-alert').innerHTML =
+      `<div class="alert alert-danger">เกิดข้อผิดพลาด: ${e.message}</div>`;
+  }
+}
+
+async function confirmCreateTable() {
+  const sql = document.getElementById('ct-sql').value.trim();
+  if (!sql) { alert('ไม่มี SQL'); return; }
+  if (!confirm(`ยืนยันสร้างตาราง "${createTableName}" ในปลายทางใช่หรือไม่?`)) return;
+
+  const btn = document.getElementById('ct-confirm-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>กำลังสร้าง...';
+
+  try {
+    const res  = await fetch('/api/create-table', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: createTableName, create_sql: sql })
+    });
+    const data = await res.json();
+    const resEl = document.getElementById('ct-result');
+
+    if (data.status === 'ok') {
+      resEl.innerHTML =
+        `<div class="alert alert-success"><i class="bi bi-check-circle-fill me-1"></i>${data.message}</div>`;
+      btn.style.display = 'none';
+
+      // อัปเดตแถวในตาราง Menu 2
+      const createBtn = document.getElementById(`create-btn-${createTableName}`);
+      if (createBtn) {
+        createBtn.innerHTML = '<i class="bi bi-check-circle-fill text-success me-1"></i>สร้างแล้ว';
+        createBtn.disabled  = true;
+        createBtn.className = 'btn btn-sm btn-outline-success';
+      }
+      // อัปเดต prefixResults
+      const rec = prefixResults.find(r => r.table === createTableName);
+      if (rec) { rec.status = 'ok'; rec.destination_count = 0; rec.diff = rec.source_count; }
+
+    } else {
+      resEl.innerHTML =
+        `<div class="alert alert-danger"><i class="bi bi-x-circle-fill me-1"></i>${data.message}
+         ${data.trace ? `<details class="mt-1"><summary>รายละเอียด</summary><pre style="font-size:.65rem;">${escHtml(data.trace)}</pre></details>` : ''}
+        </div>`;
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-database-add me-1"></i>ยืนยันสร้างตาราง';
+    }
+  } catch (e) {
+    document.getElementById('ct-result').innerHTML =
+      `<div class="alert alert-danger">เกิดข้อผิดพลาด: ${e.message}</div>`;
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-database-add me-1"></i>ยืนยันสร้างตาราง';
+  }
+}
+
+// ─── Column compare & add ─────────────────────────────────────────────────────
+let colModalTable = '';
+let colMissingData = [];
+
+async function openColumnDetail(tableName) {
+  colModalTable  = tableName;
+  colMissingData = [];
+
+  document.getElementById('col-modal-title').textContent  = `ตรวจสอบฟิล: ${tableName}`;
+  document.getElementById('col-modal-sub').textContent    = '';
+  document.getElementById('col-modal-loading').style.display = '';
+  document.getElementById('col-modal-body').style.display    = 'none';
+  document.getElementById('col-modal-alert').innerHTML       = '';
+  document.getElementById('col-modal-add-result').innerHTML  = '';
+  document.getElementById('col-add-btn').style.display       = 'none';
+  document.getElementById('col-modal-footer-info').textContent = '';
+
+  const modal = new bootstrap.Modal(document.getElementById('columnDetailModal'));
+  modal.show();
+
+  try {
+    const res  = await fetch('/api/compare-columns', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: tableName })
+    });
+    const data = await res.json();
+
+    document.getElementById('col-modal-loading').style.display = 'none';
+    document.getElementById('col-modal-body').style.display    = '';
+
+    if (data.status === 'error') {
+      document.getElementById('col-modal-alert').innerHTML =
+        `<div class="alert alert-danger">${data.message}</div>`;
+      return;
+    }
+
+    document.getElementById('col-modal-sub').textContent =
+      `ต้นทาง: ${data.src_total} ฟิล  |  ปลายทาง: ${data.dst_total} ฟิล`;
+
+    const missing = data.missing_in_dest || [];
+    const extra   = data.extra_in_dest   || [];
+
+    if (missing.length === 0 && extra.length === 0) {
+      document.getElementById('col-modal-alert').innerHTML =
+        '<div class="alert alert-success"><i class="bi bi-check-circle-fill me-1"></i>ฟิลครบถ้วน ไม่มีฟิลที่ขาด</div>';
+      // อัปเดตปุ่มในตาราง
+      const colBtn = document.getElementById(`col-btn-${tableName}`);
+      if (colBtn) { colBtn.innerHTML = '<i class="bi bi-check-circle-fill text-success me-1"></i>ฟิลครบ'; colBtn.disabled = true; }
+      return;
+    }
+
+    if (missing.length > 0) {
+      colMissingData = missing;
+      document.getElementById('col-missing-section').style.display = '';
+      document.getElementById('col-add-btn').style.display = '';
+      document.getElementById('col-modal-footer-info').textContent =
+        `พบ ${missing.length} ฟิลที่ขาดในปลายทาง`;
+
+      const tbody = document.getElementById('col-missing-tbody');
+      tbody.innerHTML = '';
+      missing.forEach((col, i) => {
+        const notNullWarning = !col.nullable
+          ? '<span class="badge bg-warning text-dark ms-1" title="NOT NULL — จะเพิ่มเป็น NULL ก่อน">NOT NULL</span>' : '';
+        tbody.innerHTML += `<tr>
+          <td class="text-center"><input type="checkbox" class="col-check" checked
+              data-idx="${i}" style="border:1px solid #666;width:1em;height:1em;"></td>
+          <td><code>${escHtml(col.column)}</code>${notNullWarning}</td>
+          <td><code class="text-primary">${escHtml(col.src_type)}</code></td>
+          <td><code class="text-success">${escHtml(col.dst_type)}</code></td>
+          <td class="text-center">${col.nullable ? 'YES' : '<span class="text-danger">NO</span>'}</td>
+          <td>${col.default !== null ? escHtml(String(col.default)) : '<span class="text-muted">-</span>'}</td>
+        </tr>`;
+      });
+    } else {
+      document.getElementById('col-missing-section').style.display = 'none';
+    }
+
+    if (extra.length > 0) {
+      document.getElementById('col-extra-section').style.display = '';
+      const ebody = document.getElementById('col-extra-tbody');
+      ebody.innerHTML = extra.map(c =>
+        `<tr><td><code>${escHtml(c.column)}</code></td><td><code>${escHtml(c.dst_type)}</code></td></tr>`
+      ).join('');
+    } else {
+      document.getElementById('col-extra-section').style.display = 'none';
+    }
+
+  } catch (e) {
+    document.getElementById('col-modal-loading').style.display = 'none';
+    document.getElementById('col-modal-body').style.display    = '';
+    document.getElementById('col-modal-alert').innerHTML =
+      `<div class="alert alert-danger">เกิดข้อผิดพลาด: ${e.message}</div>`;
+  }
+}
+
+function toggleAllCols(master) {
+  document.querySelectorAll('.col-check').forEach(cb => cb.checked = master.checked);
+}
+
+async function addSelectedColumns() {
+  const checked = [...document.querySelectorAll('.col-check:checked')]
+    .map(cb => colMissingData[parseInt(cb.dataset.idx)]);
+
+  if (checked.length === 0) { alert('กรุณาเลือกฟิลที่จะเพิ่มอย่างน้อย 1 ฟิล'); return; }
+  if (!confirm(`ต้องการเพิ่ม ${checked.length} ฟิล ในตาราง "${colModalTable}" ของปลายทางใช่หรือไม่?`)) return;
+
+  const btn = document.getElementById('col-add-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>กำลังเพิ่มฟิล...';
+
+  try {
+    const res  = await fetch('/api/add-columns', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: colModalTable, columns: checked })
+    });
+    const data = await res.json();
+    const resEl = document.getElementById('col-modal-add-result');
+
+    if (data.status === 'ok') {
+      let html = `<div class="alert alert-success"><i class="bi bi-check-circle-fill me-1"></i>${data.message}</div>`;
+      if (data.added.length > 0) {
+        html += '<div class="mb-1 small"><strong>เพิ่มสำเร็จ:</strong> ' +
+          data.added.map(a => `<code>${escHtml(a.column)}</code>`).join(', ') + '</div>';
+      }
+      if (data.errors.length > 0) {
+        html += '<div class="alert alert-warning mt-1 p-2 small"><strong>ผิดพลาด:</strong><ul class="mb-0">' +
+          data.errors.map(e => `<li><code>${escHtml(e.column)}</code>: ${escHtml(e.error)}</li>`).join('') +
+          '</ul></div>';
+      }
+      resEl.innerHTML = html;
+
+      // อัปเดตปุ่มในตาราง
+      const colBtn = document.getElementById(`col-btn-${colModalTable}`);
+      if (colBtn && data.errors.length === 0) {
+        colBtn.innerHTML = '<i class="bi bi-check-circle-fill text-success me-1"></i>ฟิลครบ';
+        colBtn.disabled  = true;
+      }
+      btn.style.display = 'none';
+    } else {
+      resEl.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-plus-circle-fill me-1"></i>เพิ่มฟิลที่เลือก';
+    }
+  } catch (e) {
+    document.getElementById('col-modal-add-result').innerHTML =
+      `<div class="alert alert-danger">เกิดข้อผิดพลาด: ${e.message}</div>`;
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-plus-circle-fill me-1"></i>เพิ่มฟิลที่เลือก';
+  }
+}
+
+// ─── Error detail builder ─────────────────────────────────────────────────────
+function buildErrorHtml(data) {
+  if (!data.total_errors || data.total_errors === 0) return '';
+
+  let html = `<div class="alert alert-warning mt-2 p-2">
+    <strong><i class="bi bi-exclamation-triangle-fill me-1"></i>
+    รายละเอียดข้อผิดพลาด (${data.total_errors} รายการ)</strong>`;
+
+  // สรุปกลุ่ม error
+  if (data.error_summary && data.error_summary.length > 0) {
+    html += '<table class="table table-sm table-bordered mt-2 mb-1" style="font-size:.75rem;">';
+    html += '<thead class="table-dark"><tr><th>ประเภทข้อผิดพลาด</th><th class="text-center">จำนวน</th><th>ตัวอย่าง PK ที่ผิดพลาด</th></tr></thead><tbody>';
+    data.error_summary.forEach(s => {
+      const pkEx = s.pk_examples.map(p => `<code>${escHtml(String(p))}</code>`).join(', ');
+      html += `<tr><td style="word-break:break-all;">${escHtml(s.error)}</td>
+               <td class="text-center fw-bold text-danger">${s.count}</td>
+               <td>${pkEx}</td></tr>`;
+    });
+    html += '</tbody></table>';
+  }
+
+  // detail 20 รายการแรก
+  if (data.error_details && data.error_details.length > 0) {
+    html += `<details class="mt-1"><summary style="cursor:pointer;font-size:.75rem;">
+      ดู record ที่ผิดพลาด (${data.error_details.length} รายการแรก)</summary>
+      <table class="table table-sm table-bordered mt-1" style="font-size:.7rem;">
+      <thead class="table-secondary"><tr><th>PK</th><th>ประเภท Error</th><th>ข้อความ Error</th><th>ฟิลด์ผิดปกติ</th></tr></thead><tbody>`;
+    data.error_details.forEach(d => {
+      const bad = d.bad_fields && d.bad_fields.length ? d.bad_fields.join(', ') : '-';
+      html += `<tr>
+        <td><code>${escHtml(String(d.pk))}</code></td>
+        <td><span class="badge bg-danger">${escHtml(d.error_type)}</span></td>
+        <td style="word-break:break-all;">${escHtml(d.error_msg)}</td>
+        <td>${escHtml(bad)}</td></tr>`;
+    });
+    html += '</tbody></table></details>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
+// ─── Utility ──────────────────────────────────────────────────────────────────
+function fmtNum(n) {
+  if (n === null || n === undefined || n < 0) return '-';
+  return Number(n).toLocaleString('th-TH');
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+loadConfig();
+
+// บันทึก/กู้คืนสถานะ collapse ของ config panel
+(function () {
+  const el  = document.getElementById('configBody');
+  const KEY = 'configPanelOpen';
+
+  // กู้คืนสถานะจาก localStorage ก่อน Bootstrap render
+  if (localStorage.getItem(KEY) === 'false') {
+    el.classList.remove('show');
+  }
+
+  // ฟัง event ของ Bootstrap Collapse แล้วบันทึกสถานะ
+  el.addEventListener('shown.bs.collapse',  () => localStorage.setItem(KEY, 'true'));
+  el.addEventListener('hidden.bs.collapse', () => localStorage.setItem(KEY, 'false'));
+})();
+</script>
+</body>
+</html>

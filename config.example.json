@@ -1,0 +1,18 @@
+{
+  "source": {
+    "type": "mysql",
+    "host": "192.168.x.x",
+    "port": 3306,
+    "database": "your_source_db",
+    "username": "your_username",
+    "password": "your_password"
+  },
+  "destination": {
+    "type": "postgresql",
+    "host": "192.168.x.x",
+    "port": 5432,
+    "database": "your_destination_db",
+    "username": "your_username",
+    "password": "your_password"
+  }
+}
