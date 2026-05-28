@@ -43,9 +43,69 @@
     .box-ok   { background:#e8f5e9; color:#2e7d32; }
 
     /* Nav tabs */
-    .nav-tabs .nav-link { color:#495057; font-size:.95rem; }
-    .nav-tabs .nav-link.active { font-weight:700; color:#0d6efd; }
-    .tab-card { border-top-left-radius:0 !important; }
+    .nav-tabs { border-bottom:none; gap:2px; flex-wrap:wrap; display:flex; }
+    .nav-tabs .nav-item { flex:0 0 auto; min-width:0; }
+    .nav-tabs .nav-link {
+      font-size:.65rem; white-space:nowrap;
+      border-radius:7px 7px 0 0 !important;
+      border:none !important;
+      padding:.2rem .38rem;
+      font-weight:600;
+      letter-spacing:0;
+      transition: transform .12s, box-shadow .12s, filter .12s;
+      position:relative; top:0;
+      display:inline-block; width:auto; min-width:0;
+    }
+    .nav-tabs .nav-link:hover {
+      filter:brightness(1.07);
+      transform:translateY(-2px);
+      box-shadow:0 4px 10px rgba(0,0,0,.18);
+    }
+    .nav-tabs .nav-link.active {
+      transform:translateY(0);
+      box-shadow:0 2px 0 rgba(0,0,0,.25) inset, 0 -1px 0 rgba(255,255,255,.25) inset;
+    }
+    .tab-card { border-radius:0 12px 12px 12px !important; }
+
+    /* Tab 1 — Steel Blue */
+    #tab1-link        { background:linear-gradient(160deg,#60a5fa,#1d6bc7); color:#fff; box-shadow:0 4px 8px rgba(29,107,199,.35),0 1px 0 rgba(255,255,255,.3) inset; }
+    #tab1-link.active { background:linear-gradient(160deg,#1565c0,#0d47a1); box-shadow:0 2px 4px rgba(13,71,161,.5) inset; }
+
+    /* Tab 2 — Indigo */
+    #tab2-link        { background:linear-gradient(160deg,#a78bfa,#5b21b6); color:#fff; box-shadow:0 4px 8px rgba(91,33,182,.35),0 1px 0 rgba(255,255,255,.3) inset; }
+    #tab2-link.active { background:linear-gradient(160deg,#4527a0,#311b92); box-shadow:0 2px 4px rgba(49,27,146,.5) inset; }
+
+    /* Tab 3 — Teal */
+    #tab3-link        { background:linear-gradient(160deg,#34d399,#047857); color:#fff; box-shadow:0 4px 8px rgba(4,120,87,.35),0 1px 0 rgba(255,255,255,.3) inset; }
+    #tab3-link.active { background:linear-gradient(160deg,#00897b,#00695c); box-shadow:0 2px 4px rgba(0,105,92,.5) inset; }
+
+    /* Tab 4 — Amber */
+    #tab4-link        { background:linear-gradient(160deg,#fbbf24,#b45309); color:#fff; box-shadow:0 4px 8px rgba(180,83,9,.35),0 1px 0 rgba(255,255,255,.3) inset; }
+    #tab4-link.active { background:linear-gradient(160deg,#d97706,#92400e); box-shadow:0 2px 4px rgba(146,64,14,.5) inset; }
+
+    /* Tab 5 — Pink */
+    #tab5-link        { background:linear-gradient(160deg,#f472b6,#9d174d); color:#fff; box-shadow:0 4px 8px rgba(157,23,77,.35),0 1px 0 rgba(255,255,255,.3) inset; }
+    #tab5-link.active { background:linear-gradient(160deg,#db2777,#831843); box-shadow:0 2px 4px rgba(131,24,67,.5) inset; }
+
+    /* Tab 6 — Orange (ตาราง Log) */
+    #tab6-link        { background:linear-gradient(160deg,#fb923c,#c2410c); color:#fff; box-shadow:0 4px 8px rgba(194,65,12,.35),0 1px 0 rgba(255,255,255,.3) inset; }
+    #tab6-link.active { background:linear-gradient(160deg,#ea580c,#7c2d12); box-shadow:0 2px 4px rgba(124,45,18,.5) inset; }
+
+    /* Tab 7 — Yellow (ตาราง Image) */
+    #tab7-link        { background:linear-gradient(160deg,#fde047,#a16207); color:#fff; box-shadow:0 4px 8px rgba(161,98,7,.35),0 1px 0 rgba(255,255,255,.3) inset; }
+    #tab7-link.active { background:linear-gradient(160deg,#ca8a04,#713f12); box-shadow:0 2px 4px rgba(113,63,18,.5) inset; }
+
+    /* Tab 8 — Fuchsia (ตาราง PPL) */
+    #tab8-link        { background:linear-gradient(160deg,#e879f9,#86198f); color:#fff; box-shadow:0 4px 8px rgba(134,25,143,.35),0 1px 0 rgba(255,255,255,.3) inset; }
+    #tab8-link.active { background:linear-gradient(160deg,#c026d3,#701a75); box-shadow:0 2px 4px rgba(112,26,117,.5) inset; }
+
+    /* Tab 9 — Cyan (Update Serial PG) */
+    #tab9-link        { background:linear-gradient(160deg,#22d3ee,#0e7490); color:#fff; box-shadow:0 4px 8px rgba(14,116,144,.35),0 1px 0 rgba(255,255,255,.3) inset; }
+    #tab9-link.active { background:linear-gradient(160deg,#0891b2,#164e63); box-shadow:0 2px 4px rgba(22,78,99,.5) inset; }
+
+    /* Tab 10 — Lime (Update Serial MySQL) */
+    #tab10-link        { background:linear-gradient(160deg,#a3e635,#4d7c0f); color:#fff; box-shadow:0 4px 8px rgba(77,124,15,.35),0 1px 0 rgba(255,255,255,.3) inset; }
+    #tab10-link.active { background:linear-gradient(160deg,#65a30d,#365314); box-shadow:0 2px 4px rgba(54,83,20,.5) inset; }
 
     /* Tables */
     .table { font-size: .9rem; }
@@ -122,10 +182,10 @@
 </div>
 
 <!-- Navbar -->
-<nav class="navbar py-3 mb-4" style="background:linear-gradient(135deg,#1a1a2e,#16213e);">
+<nav class="navbar py-1 mb-3" style="background:linear-gradient(135deg,#1a1a2e,#16213e);">
   <div class="container-fluid">
-    <span class="navbar-brand text-white fw-bold fs-5">
-      <i class="bi bi-database-check me-2"></i>DB Compare &amp; Sync Tool
+    <span class="navbar-brand text-white fw-bold" style="font-size:.9rem;">
+      <i class="bi bi-database-check me-1"></i>DB Compare &amp; Sync Tool
     </span>
   </div>
 </nav>
@@ -134,10 +194,10 @@
 
   <!-- ===== CONFIG SECTION ===== -->
   <div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center"
-         style="background:#212529; color:#fff; border-radius:12px 12px 0 0;">
-      <span><i class="bi bi-gear-fill me-2"></i>ตั้งค่าการเชื่อมต่อ Database</span>
-      <button class="btn btn-sm btn-outline-light"
+    <div class="card-header d-flex justify-content-between align-items-center py-1 px-3"
+         style="background:#212529; color:#fff; border-radius:12px 12px 0 0; font-size:.85rem;">
+      <span><i class="bi bi-gear-fill me-1"></i>ตั้งค่าการเชื่อมต่อ Database</span>
+      <button class="btn btn-sm btn-outline-light py-0 px-2" style="font-size:.8rem;"
               data-bs-toggle="collapse" data-bs-target="#configBody">
         <i class="bi bi-chevron-expand"></i> แสดง / ซ่อน
       </button>
@@ -264,13 +324,54 @@
   <!-- ===== MAIN TABS ===== -->
   <ul class="nav nav-tabs">
     <li class="nav-item">
-      <a class="nav-link active px-4 py-2" id="tab1-link" href="#" onclick="showTab(1); return false;">
-        <i class="bi bi-table me-1"></i>เมนู 1 : ตรวจสอบทีละตาราง
+      <a class="nav-link active px-3 py-1" id="tab1-link" href="#" onclick="showTab(1); return false;">
+        <i class="bi bi-table me-1"></i>M1: ทีละตาราง
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link px-4 py-2" id="tab2-link" href="#" onclick="showTab(2); return false;">
-        <i class="bi bi-collection-fill me-1"></i>เมนู 2 : ตรวจสอบทุกตาราง
+      <a class="nav-link px-3 py-1" id="tab2-link" href="#" onclick="showTab(2); return false;">
+        <i class="bi bi-collection-fill me-1"></i>M2: ทุกตาราง
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link px-3 py-1" id="tab3-link" href="#" onclick="showTab(3); return false;">
+        <i class="bi bi-clipboard2-pulse me-1"></i>M3: Assessment
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link px-3 py-1" id="tab4-link" href="#" onclick="showTab(4); return false;">
+        <i class="bi bi-key-fill me-1"></i>M4: ไม่มี PK
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link px-3 py-1" id="tab5-link" href="#" onclick="showTab(5); return false;">
+        <i class="bi bi-database-fill-gear me-1"></i>M5: ข้อมูลพื้นฐาน
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link px-3 py-1" id="tab6-link" href="#" onclick="showTab(6); return false;">
+        <i class="bi bi-journal-text me-1"></i>M6: ตาราง Log
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link px-3 py-1" id="tab7-link" href="#" onclick="showTab(7); return false;">
+        <i class="bi bi-images me-1"></i>M7: ตาราง Image
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link px-3 py-1" id="tab8-link" href="#" onclick="showTab(8); return false;">
+        <i class="bi bi-clipboard2-heart me-1"></i>M8: ตาราง PPL
+      </a>
+    </li>
+    <li style="flex-basis:100%;height:0;border:0;padding:0;margin:0;"></li>
+    <li class="nav-item">
+      <a class="nav-link px-3 py-1" id="tab9-link" href="#" onclick="showTab(9); return false;">
+        <i class="bi bi-arrow-repeat me-1"></i>M9: Serial PG
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link px-3 py-1" id="tab10-link" href="#" onclick="showTab(10); return false;">
+        <i class="bi bi-arrow-repeat me-1"></i>M10: Serial MySQL
       </a>
     </li>
   </ul>
@@ -423,20 +524,70 @@
         <div id="prefix-buttons" class="d-flex flex-wrap gap-1 mb-3" style="display:none !important;"></div>
       </div><!-- /prefix-controls -->
 
-      <!-- Checkbox filter — แสดงตลอด ไม่ขึ้นกับผลลัพธ์ -->
-      <div class="form-check mt-2 mb-1">
-        <input class="form-check-input" type="checkbox" id="chk-diff-only" onchange="applyDiffFilter()"
-               style="border:2px solid #000; width:1.1em; height:1.1em;">
-        <label class="form-check-label fw-semibold" for="chk-diff-only" style="font-size:.9rem;">
-          แสดงเฉพาะตารางที่ข้อมูล<span class="text-danger">ไม่เท่ากัน</span>
-        </label>
+      <!-- Filter checkboxes -->
+      <div class="border rounded p-2 mt-2 mb-1" style="background:#f8f9fa;">
+        <!-- แถวที่ 1: ไม่ตรงกันทุกประเภท -->
+        <div class="form-check mb-1">
+          <input class="form-check-input" type="checkbox" id="chk-diff-only" onchange="applyPrefixFilter()"
+                 style="border:2px solid #6c757d; width:1.05em; height:1.05em;">
+          <label class="form-check-label fw-semibold text-secondary" for="chk-diff-only" style="font-size:.85rem;">
+            แสดงตารางที่ข้อมูล<span class="text-danger">ไม่ตรงกันทุกประเภท</span>
+            <span class="text-muted fw-normal">(ถ้าติ๊กนี้ ปุ่มจัดการทั้งหมดจะใช้ไม่ได้)</span>
+          </label>
+        </div>
+        <hr class="my-1">
+        <!-- แถวที่ 2: filter เฉพาะเจาะจง + ปุ่มจัดการ -->
+        <div class="d-flex flex-wrap align-items-center gap-3">
+          <div class="form-check mb-0 excl-filter-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-missing-table" onchange="selectExclusiveFilter(this)"
+                   style="border:2px solid #6c757d; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-missing-table" style="font-size:.85rem;">
+              <i class="bi bi-exclamation-circle-fill text-secondary me-1"></i>ไม่มีตารางปลายทาง
+            </label>
+          </div>
+          <div class="form-check mb-0 excl-filter-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-missing-col" onchange="selectExclusiveFilter(this)"
+                   style="border:2px solid #dc3545; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-missing-col" style="font-size:.85rem;">
+              <i class="bi bi-layout-three-columns text-danger me-1"></i>ฟิลไม่เท่ากัน
+            </label>
+          </div>
+          <div class="form-check mb-0 excl-filter-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-data-diff" onchange="selectExclusiveFilter(this)"
+                   style="border:2px solid #dc3545; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-data-diff" style="font-size:.85rem;">
+              <i class="bi bi-arrow-up-circle-fill text-danger me-1"></i>ข้อมูลต้นทางมากกว่าปลายทาง
+            </label>
+          </div>
+          <div class="form-check mb-0 excl-filter-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-dst-more" onchange="selectExclusiveFilter(this)"
+                   style="border:2px solid #4a148c; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-dst-more" style="font-size:.85rem;">
+              <i class="bi bi-arrow-down-circle-fill me-1" style="color:#4a148c;"></i>ข้อมูลต้นทางน้อยกว่าปลายทาง
+            </label>
+          </div>
+          <div class="form-check mb-0 excl-filter-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-need-update" onchange="selectExclusiveFilter(this)"
+                   style="border:2px solid #0891b2; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-need-update" style="font-size:.85rem;">
+              <i class="bi bi-pencil-square me-1" style="color:#0891b2;"></i>ข้อมูลที่ต้อง update
+            </label>
+          </div>
+          <button class="btn btn-sm btn-warning fw-semibold ms-auto" id="btn-bulk-manage"
+                  onclick="manageBulkAll()" disabled>
+            <i class="bi bi-lightning-fill me-1"></i>จัดการข้อมูลทั้งหมดที่แสดง
+          </button>
+        </div>
       </div>
 
       <!-- Prefix results -->
       <div id="prefix-results" style="display:none;" class="mt-2">
-        <div class="d-flex justify-content-end mb-2">
+        <div class="d-flex justify-content-between align-items-center mb-2">
           <span class="text-muted" id="prefix-summary" style="font-size:0.6em;"></span>
           <span id="prefix-label" style="display:none;"></span>
+          <button class="btn btn-success btn-sm" onclick="exportPrefixToXlsx()">
+            <i class="bi bi-file-earmark-excel me-1"></i>ส่งออก Excel
+          </button>
         </div>
 
         <div class="scroll-table" style="max-height:600px;">
@@ -458,6 +609,640 @@
       </div>
     </div>
   </div><!-- /tab2 -->
+
+  <!-- ===== TAB 3: Assessment Tables (asm_) ===== -->
+  <div class="card tab-card" id="tab3-content" style="border-radius:0 12px 12px 12px; display:none;">
+    <div class="card-body">
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="mb-0 fw-bold" style="font-size:.8rem;">
+            <i class="bi bi-clipboard2-pulse me-1"></i>ตารางสำหรับ Assessment
+          </h5>
+          <p class="text-muted mb-0" style="font-size:.72rem;">แสดงเฉพาะตารางที่ขึ้นต้นด้วย <code>asm_</code></p>
+        </div>
+        <div class="d-flex gap-1">
+          <button class="btn btn-primary btn-sm py-0 px-2" style="font-size:.72rem;" onclick="loadAsmTables()">
+            <i class="bi bi-arrow-clockwise me-1"></i>โหลด / รีเฟรช
+          </button>
+          <button class="btn btn-danger btn-sm py-0 px-2" style="font-size:.72rem;" onclick="truncateAsmTables()">
+            <i class="bi bi-trash3-fill me-1"></i>ล้างข้อมูล asm_ ทั้งหมด
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter checkboxes -->
+      <div class="border rounded p-1 mt-1 mb-2" style="background:#f8f9fa;">
+        <div class="form-check mb-0">
+          <input class="form-check-input" type="checkbox" id="chk-asm-diff-only" onchange="applyAsmFilter()"
+                 style="border:2px solid #6c757d; width:.95em; height:.95em;">
+          <label class="form-check-label fw-semibold text-secondary" for="chk-asm-diff-only" style="font-size:.72rem;">
+            แสดงตารางที่ข้อมูล<span class="text-danger">ไม่ตรงกันทุกประเภท</span>
+            <span class="text-muted fw-normal">(ถ้าติ๊กนี้ ปุ่มจัดการทั้งหมดจะใช้ไม่ได้)</span>
+          </label>
+        </div>
+        <hr class="my-1">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <div class="form-check mb-0 asm-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-asm-missing-table" onchange="selectExclusiveAsmFilter(this)"
+                   style="border:2px solid #6c757d; width:.95em; height:.95em;">
+            <label class="form-check-label fw-semibold" for="chk-asm-missing-table" style="font-size:.72rem;">
+              <i class="bi bi-exclamation-circle-fill text-secondary me-1"></i>ไม่มีตารางปลายทาง
+            </label>
+          </div>
+          <div class="form-check mb-0 asm-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-asm-missing-col" onchange="selectExclusiveAsmFilter(this)"
+                   style="border:2px solid #dc3545; width:.95em; height:.95em;">
+            <label class="form-check-label fw-semibold" for="chk-asm-missing-col" style="font-size:.72rem;">
+              <i class="bi bi-layout-three-columns text-danger me-1"></i>ฟิลไม่เท่ากัน
+            </label>
+          </div>
+          <div class="form-check mb-0 asm-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-asm-data-diff" onchange="selectExclusiveAsmFilter(this)"
+                   style="border:2px solid #dc3545; width:.95em; height:.95em;">
+            <label class="form-check-label fw-semibold" for="chk-asm-data-diff" style="font-size:.72rem;">
+              <i class="bi bi-arrow-up-circle-fill text-danger me-1"></i>ต้นทางมากกว่า
+            </label>
+          </div>
+          <div class="form-check mb-0 asm-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-asm-dst-more" onchange="selectExclusiveAsmFilter(this)"
+                   style="border:2px solid #4a148c; width:.95em; height:.95em;">
+            <label class="form-check-label fw-semibold" for="chk-asm-dst-more" style="font-size:.72rem;">
+              <i class="bi bi-arrow-down-circle-fill me-1" style="color:#4a148c;"></i>ต้นทางน้อยกว่า
+            </label>
+          </div>
+          <div class="form-check mb-0 asm-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-asm-need-update" onchange="selectExclusiveAsmFilter(this)"
+                   style="border:2px solid #0891b2; width:.95em; height:.95em;">
+            <label class="form-check-label fw-semibold" for="chk-asm-need-update" style="font-size:.72rem;">
+              <i class="bi bi-pencil-square me-1" style="color:#0891b2;"></i>ต้อง update
+            </label>
+          </div>
+          <button class="btn btn-sm btn-warning fw-semibold ms-auto py-0 px-2" style="font-size:.72rem;"
+                  id="btn-asm-bulk-manage" onclick="manageAsmBulkAll()" disabled>
+            <i class="bi bi-lightning-fill me-1"></i>จัดการทั้งหมด
+          </button>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="asm-results" style="display:none;" class="mt-1">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="text-muted" id="asm-summary" style="font-size:0.65em;"></span>
+          <button class="btn btn-success btn-sm" onclick="exportAsmToXlsx()">
+            <i class="bi bi-file-earmark-excel me-1"></i>ส่งออก Excel
+          </button>
+        </div>
+        <div class="scroll-table" style="max-height:600px;">
+          <table class="table table-sm table-hover table-bordered mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th class="text-center" style="width:36px; white-space:nowrap;">#</th>
+                <th class="text-center" style="width:20%;">ชื่อตาราง</th>
+                <th class="text-center" style="width:140px; white-space:nowrap;">Src Count</th>
+                <th class="text-center" style="width:140px; white-space:nowrap;">Dst Count</th>
+                <th class="text-center" style="width:110px; white-space:nowrap;">ขาด</th>
+                <th class="text-center" style="width:130px; white-space:nowrap;">สถานะ</th>
+                <th class="text-center" style="width:140px; white-space:nowrap;">Sync</th>
+              </tr>
+            </thead>
+            <tbody id="asm-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /tab3 -->
+
+  <!-- ===== TAB 4: Tables without Primary Key ===== -->
+  <div class="card tab-card" id="tab4-content" style="border-radius:0 12px 12px 12px; display:none;">
+    <div class="card-body">
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="mb-1 fw-bold" style="font-size:1rem;">
+            <i class="bi bi-key-fill text-warning me-2"></i>ตารางที่ไม่มี Primary Key
+          </h5>
+          <p class="text-muted mb-0" style="font-size:.85rem;">
+            เปรียบเทียบ Source vs Destination เฉพาะตารางที่ไม่มี Primary Key
+          </p>
+        </div>
+        <button class="btn btn-warning btn-sm fw-semibold" onclick="loadNoPkTables()">
+          <i class="bi bi-arrow-clockwise me-1"></i>ตรวจสอบ / รีเฟรช
+        </button>
+      </div>
+
+      <!-- Results -->
+      <div id="nopk-results" style="display:none;" class="mt-2">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted" id="nopk-summary" style="font-size:.75rem;"></span>
+          <button class="btn btn-success btn-sm" onclick="exportNoPkToXlsx()">
+            <i class="bi bi-file-earmark-excel me-1"></i>ส่งออก Excel
+          </button>
+        </div>
+        <div class="scroll-table" style="max-height:600px;">
+          <table class="table table-sm table-hover table-bordered mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th class="text-center" style="width:46px;">#</th>
+                <th>ชื่อตาราง</th>
+                <th class="text-center" style="width:130px; white-space:nowrap;">จำนวน Record ต้นทาง</th>
+                <th class="text-center" style="width:80px;">หมายเหตุ</th>
+              </tr>
+            </thead>
+            <tbody id="nopk-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /tab4 -->
+
+  <!-- ===== TAB 5: Basic Data Tables ===== -->
+  <div class="card tab-card" id="tab5-content" style="border-radius:0 12px 12px 12px; display:none;">
+    <div class="card-body">
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="mb-1 fw-bold" style="font-size:1rem;">
+            <i class="bi bi-database-fill-gear me-2" style="color:#db2777;"></i>ตารางสำหรับข้อมูลพื้นฐาน
+          </h5>
+          <p class="text-muted mb-0" style="font-size:.85rem;">ตรวจสอบเฉพาะตารางข้อมูลพื้นฐานที่กำหนดไว้</p>
+        </div>
+        <button class="btn btn-sm fw-semibold" style="background:#db2777;color:#fff;" onclick="loadBasicTables()">
+          <i class="bi bi-arrow-clockwise me-1"></i>โหลด / รีเฟรช
+        </button>
+      </div>
+
+      <!-- Filter checkboxes -->
+      <div class="border rounded p-2 mt-1 mb-2" style="background:#f8f9fa;">
+        <div class="form-check mb-1">
+          <input class="form-check-input" type="checkbox" id="chk-basic-diff-only" onchange="applyBasicFilter()"
+                 style="border:2px solid #6c757d; width:1.05em; height:1.05em;">
+          <label class="form-check-label fw-semibold text-secondary" for="chk-basic-diff-only" style="font-size:.85rem;">
+            แสดงตารางที่ข้อมูล<span class="text-danger">ไม่ตรงกันทุกประเภท</span>
+            <span class="text-muted fw-normal">(ถ้าติ๊กนี้ ปุ่มจัดการทั้งหมดจะใช้ไม่ได้)</span>
+          </label>
+        </div>
+        <hr class="my-1">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+          <div class="form-check mb-0 basic-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-basic-missing-table" onchange="selectExclusiveBasicFilter(this)"
+                   style="border:2px solid #6c757d; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-basic-missing-table" style="font-size:.85rem;">
+              <i class="bi bi-exclamation-circle-fill text-secondary me-1"></i>ไม่มีตารางปลายทาง
+            </label>
+          </div>
+          <div class="form-check mb-0 basic-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-basic-missing-col" onchange="selectExclusiveBasicFilter(this)"
+                   style="border:2px solid #dc3545; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-basic-missing-col" style="font-size:.85rem;">
+              <i class="bi bi-layout-three-columns text-danger me-1"></i>ฟิลไม่เท่ากัน
+            </label>
+          </div>
+          <div class="form-check mb-0 basic-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-basic-data-diff" onchange="selectExclusiveBasicFilter(this)"
+                   style="border:2px solid #dc3545; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-basic-data-diff" style="font-size:.85rem;">
+              <i class="bi bi-arrow-up-circle-fill text-danger me-1"></i>ข้อมูลต้นทางมากกว่าปลายทาง
+            </label>
+          </div>
+          <div class="form-check mb-0 basic-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-basic-dst-more" onchange="selectExclusiveBasicFilter(this)"
+                   style="border:2px solid #4a148c; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-basic-dst-more" style="font-size:.85rem;">
+              <i class="bi bi-arrow-down-circle-fill me-1" style="color:#4a148c;"></i>ข้อมูลต้นทางน้อยกว่าปลายทาง
+            </label>
+          </div>
+          <button class="btn btn-sm btn-warning fw-semibold ms-auto" id="btn-basic-bulk-manage"
+                  onclick="manageBasicBulkAll()" disabled>
+            <i class="bi bi-lightning-fill me-1"></i>จัดการข้อมูลทั้งหมดที่แสดง
+          </button>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="basic-results" style="display:none;" class="mt-2">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted" id="basic-summary" style="font-size:0.6em;"></span>
+          <button class="btn btn-success btn-sm" onclick="exportBasicToXlsx()">
+            <i class="bi bi-file-earmark-excel me-1"></i>ส่งออก Excel
+          </button>
+        </div>
+        <div class="scroll-table" style="max-height:600px;">
+          <table class="table table-sm table-hover table-bordered mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th class="text-center" style="width:36px; white-space:nowrap;">#</th>
+                <th class="text-center" style="width:18%;">ชื่อตาราง</th>
+                <th style="min-width:180px;">คำอธิบาย</th>
+                <th class="text-center" style="width:130px; white-space:nowrap;">Src Count</th>
+                <th class="text-center" style="width:130px; white-space:nowrap;">Dst Count</th>
+                <th class="text-center" style="width:100px; white-space:nowrap;">ขาด</th>
+                <th class="text-center" style="width:120px; white-space:nowrap;">สถานะ</th>
+                <th class="text-center" style="width:140px; white-space:nowrap;">Sync</th>
+              </tr>
+            </thead>
+            <tbody id="basic-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /tab5 -->
+
+  <!-- ===== TAB 6: Update Serial PostgreSQL ===== -->
+  <div class="card tab-card" id="tab6-content" style="border-radius:0 12px 12px 12px; display:none;">
+    <div class="card-body">
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="mb-1 fw-bold" style="font-size:1rem;">
+            <i class="bi bi-arrow-repeat me-2" style="color:#0891b2;"></i>Update Serial / Sequence PostgreSQL
+          </h5>
+          <p class="text-muted mb-0" style="font-size:.85rem;">
+            รีเซ็ต sequence ของฐานข้อมูลปลายทาง (PostgreSQL) ให้ตรงกับ max value ปัจจุบัน
+            <span class="badge bg-success ms-1" style="font-size:.7rem;">ปลายทางเท่านั้น</span>
+          </p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+          <div class="form-check mb-0">
+            <input class="form-check-input" type="checkbox" id="seq-select-all"
+                   onchange="seqSelectAll(this.checked)"
+                   style="border:2px solid #000; width:1.1em; height:1.1em;">
+            <label class="form-check-label fw-semibold small" for="seq-select-all">เลือกทั้งหมด</label>
+          </div>
+          <button class="btn btn-info btn-sm fw-semibold" onclick="checkSequences()" style="color:#fff;">
+            <i class="bi bi-search me-1"></i>ตรวจสอบ
+          </button>
+          <button class="btn btn-danger btn-sm fw-semibold" onclick="runUpdateSequences()">
+            <i class="bi bi-arrow-repeat me-1"></i>อัปเดต Sequence ที่เลือก
+          </button>
+        </div>
+      </div>
+
+      <div class="scroll-table" style="max-height:650px;">
+        <table class="table table-sm table-hover table-bordered mb-0" style="table-layout:auto;width:auto;">
+          <thead class="table-dark sticky-top">
+            <tr>
+              <th class="text-center" style="white-space:nowrap;font-size:.7rem;">☐</th>
+              <th class="text-center" style="white-space:nowrap;font-size:.7rem;">#</th>
+              <th style="white-space:nowrap;font-size:.7rem;">Column</th>
+              <th style="white-space:nowrap;font-size:.7rem;">คำอธิบาย</th>
+              <th style="white-space:nowrap;font-size:.7rem;">Query จากตาราง</th>
+              <th class="text-center" style="white-space:nowrap;font-size:.7rem;">serial ปัจจุบัน</th>
+              <th class="text-center" style="white-space:nowrap;font-size:.7rem;">Max Value (ปลายทาง)</th>
+              <th style="white-space:nowrap;font-size:.7rem;">Sequence (ALTER/CREATE)</th>
+              <th class="text-center" style="white-space:nowrap;font-size:.7rem;">สถานะ</th>
+            </tr>
+          </thead>
+          <tbody id="seq-tbody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div><!-- /tab6 -->
+
+  <!-- ===== TAB 7: Update Serial MySQL ===== -->
+  <div class="card tab-card" id="tab7-content" style="border-radius:0 12px 12px 12px; display:none;">
+    <div class="card-body">
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="mb-1 fw-bold" style="font-size:1rem;">
+            <i class="bi bi-arrow-repeat me-2" style="color:#65a30d;"></i>Update Serial MySQL (ปลายทาง)
+          </h5>
+          <p class="text-muted mb-0" style="font-size:.85rem;">
+            รีเซ็ต serial ของฐานข้อมูลปลายทาง (MySQL) ให้ตรงกับ max value ปัจจุบัน
+            <span class="badge bg-success ms-1" style="font-size:.7rem;">ปลายทางเท่านั้น</span>
+          </p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+          <div class="form-check mb-0">
+            <input class="form-check-input" type="checkbox" id="seq7-select-all"
+                   onchange="seq7SelectAll(this.checked)"
+                   style="border:2px solid #000; width:1.1em; height:1.1em;">
+            <label class="form-check-label fw-semibold small" for="seq7-select-all">เลือกทั้งหมด</label>
+          </div>
+          <button class="btn btn-info btn-sm fw-semibold" onclick="checkMysqlSerials()" style="color:#fff;">
+            <i class="bi bi-search me-1"></i>ตรวจสอบ
+          </button>
+          <button class="btn btn-danger btn-sm fw-semibold" onclick="runUpdateMysqlSerials()">
+            <i class="bi bi-arrow-repeat me-1"></i>อัปเดต Serial ที่เลือก
+          </button>
+        </div>
+      </div>
+
+      <div class="scroll-table" style="max-height:650px;">
+        <table class="table table-sm table-hover table-bordered mb-0" style="table-layout:auto;width:auto;">
+          <thead class="table-dark sticky-top">
+            <tr>
+              <th class="text-center" style="white-space:nowrap;font-size:.7rem;">☐</th>
+              <th class="text-center" style="white-space:nowrap;font-size:.7rem;">#</th>
+              <th style="white-space:nowrap;font-size:.7rem;">Column</th>
+              <th style="white-space:nowrap;font-size:.7rem;">คำอธิบาย</th>
+              <th style="white-space:nowrap;font-size:.7rem;">Query จากตาราง</th>
+              <th class="text-center" style="white-space:nowrap;font-size:.7rem;">serial ปัจจุบัน</th>
+              <th class="text-center" style="white-space:nowrap;font-size:.7rem;">Max Value (ปลายทาง)</th>
+              <th class="text-center" style="white-space:nowrap;font-size:.7rem;">สถานะ</th>
+            </tr>
+          </thead>
+          <tbody id="seq7-tbody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div><!-- /tab7 -->
+
+  <!-- ===== TAB 8: Log Tables ===== -->
+  <div class="card tab-card" id="tab8-content" style="border-radius:0 12px 12px 12px; display:none;">
+    <div class="card-body">
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="mb-1 fw-bold" style="font-size:1rem;">
+            <i class="bi bi-journal-text me-2" style="color:#ea580c;"></i>ตาราง Log (มี _log ในชื่อ)
+          </h5>
+          <p class="text-muted mb-0" style="font-size:.85rem;">แสดงเฉพาะตารางที่มีคำว่า <code>_log</code> ในชื่อตาราง</p>
+        </div>
+        <button class="btn btn-sm fw-semibold" style="background:#ea580c;color:#fff;" onclick="loadLogTables()">
+          <i class="bi bi-arrow-clockwise me-1"></i>โหลด / รีเฟรช
+        </button>
+      </div>
+
+      <!-- Filter checkboxes -->
+      <div class="border rounded p-2 mt-1 mb-2" style="background:#f8f9fa;">
+        <div class="form-check mb-1">
+          <input class="form-check-input" type="checkbox" id="chk-log-diff-only" onchange="applyLogFilter()"
+                 style="border:2px solid #6c757d; width:1.05em; height:1.05em;">
+          <label class="form-check-label fw-semibold text-secondary" for="chk-log-diff-only" style="font-size:.85rem;">
+            แสดงตารางที่ข้อมูล<span class="text-danger">ไม่ตรงกันทุกประเภท</span>
+            <span class="text-muted fw-normal">(ถ้าติ๊กนี้ ปุ่มจัดการทั้งหมดจะใช้ไม่ได้)</span>
+          </label>
+        </div>
+        <hr class="my-1">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+          <div class="form-check mb-0 log-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-log-missing-table" onchange="selectExclusiveLogFilter(this)"
+                   style="border:2px solid #6c757d; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-log-missing-table" style="font-size:.85rem;">
+              <i class="bi bi-exclamation-circle-fill text-secondary me-1"></i>ไม่มีตารางปลายทาง
+            </label>
+          </div>
+          <div class="form-check mb-0 log-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-log-missing-col" onchange="selectExclusiveLogFilter(this)"
+                   style="border:2px solid #dc3545; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-log-missing-col" style="font-size:.85rem;">
+              <i class="bi bi-layout-three-columns text-danger me-1"></i>ฟิลไม่เท่ากัน
+            </label>
+          </div>
+          <div class="form-check mb-0 log-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-log-data-diff" onchange="selectExclusiveLogFilter(this)"
+                   style="border:2px solid #dc3545; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-log-data-diff" style="font-size:.85rem;">
+              <i class="bi bi-arrow-up-circle-fill text-danger me-1"></i>ข้อมูลต้นทางมากกว่าปลายทาง
+            </label>
+          </div>
+          <div class="form-check mb-0 log-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-log-dst-more" onchange="selectExclusiveLogFilter(this)"
+                   style="border:2px solid #4a148c; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-log-dst-more" style="font-size:.85rem;">
+              <i class="bi bi-arrow-down-circle-fill me-1" style="color:#4a148c;"></i>ข้อมูลต้นทางน้อยกว่าปลายทาง
+            </label>
+          </div>
+          <div class="form-check mb-0 log-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-log-need-update" onchange="selectExclusiveLogFilter(this)"
+                   style="border:2px solid #0891b2; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-log-need-update" style="font-size:.85rem;">
+              <i class="bi bi-pencil-square me-1" style="color:#0891b2;"></i>ต้อง update
+            </label>
+          </div>
+          <button class="btn btn-sm btn-warning fw-semibold ms-auto" id="btn-log-bulk-manage"
+                  onclick="manageLogBulkAll()" disabled>
+            <i class="bi bi-lightning-fill me-1"></i>จัดการข้อมูลทั้งหมดที่แสดง
+          </button>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="log-results" style="display:none;" class="mt-2">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted" id="log-summary" style="font-size:0.6em;"></span>
+          <button class="btn btn-success btn-sm" onclick="exportLogToXlsx()">
+            <i class="bi bi-file-earmark-excel me-1"></i>ส่งออก Excel
+          </button>
+        </div>
+        <div class="scroll-table" style="max-height:600px;">
+          <table class="table table-sm table-hover table-bordered mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th class="text-center" style="width:36px; white-space:nowrap;">#</th>
+                <th class="text-center" style="width:20%;">ชื่อตาราง</th>
+                <th class="text-center" style="width:140px; white-space:nowrap;">Src Count</th>
+                <th class="text-center" style="width:140px; white-space:nowrap;">Dst Count</th>
+                <th class="text-center" style="width:110px; white-space:nowrap;">ขาด</th>
+                <th class="text-center" style="width:130px; white-space:nowrap;">สถานะ</th>
+                <th class="text-center" style="width:140px; white-space:nowrap;">Sync</th>
+              </tr>
+            </thead>
+            <tbody id="log-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /tab8 -->
+
+  <!-- ===== TAB 9: Image Tables ===== -->
+  <div class="card tab-card" id="tab9-content" style="border-radius:0 12px 12px 12px; display:none;">
+    <div class="card-body">
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="mb-1 fw-bold" style="font-size:1rem;">
+            <i class="bi bi-images me-2" style="color:#ca8a04;"></i>ตาราง Image (มีคำว่า image ในชื่อตาราง)
+          </h5>
+          <p class="text-muted mb-0" style="font-size:.85rem;">แสดงเฉพาะตารางที่มีคำว่า <code>image</code> ในชื่อตาราง</p>
+        </div>
+        <button class="btn btn-sm fw-semibold" style="background:#ca8a04;color:#fff;" onclick="loadImageTables()">
+          <i class="bi bi-arrow-clockwise me-1"></i>โหลด / รีเฟรช
+        </button>
+      </div>
+
+      <!-- Filter checkboxes -->
+      <div class="border rounded p-2 mt-1 mb-2" style="background:#f8f9fa;">
+        <div class="form-check mb-1">
+          <input class="form-check-input" type="checkbox" id="chk-img-diff-only" onchange="applyImageFilter()"
+                 style="border:2px solid #6c757d; width:1.05em; height:1.05em;">
+          <label class="form-check-label fw-semibold text-secondary" for="chk-img-diff-only" style="font-size:.85rem;">
+            แสดงตารางที่ข้อมูล<span class="text-danger">ไม่ตรงกันทุกประเภท</span>
+            <span class="text-muted fw-normal">(ถ้าติ๊กนี้ ปุ่มจัดการทั้งหมดจะใช้ไม่ได้)</span>
+          </label>
+        </div>
+        <hr class="my-1">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+          <div class="form-check mb-0 img-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-img-missing-table" onchange="selectExclusiveImageFilter(this)"
+                   style="border:2px solid #6c757d; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-img-missing-table" style="font-size:.85rem;">
+              <i class="bi bi-exclamation-circle-fill text-secondary me-1"></i>ไม่มีตารางปลายทาง
+            </label>
+          </div>
+          <div class="form-check mb-0 img-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-img-missing-col" onchange="selectExclusiveImageFilter(this)"
+                   style="border:2px solid #dc3545; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-img-missing-col" style="font-size:.85rem;">
+              <i class="bi bi-layout-three-columns text-danger me-1"></i>ฟิลไม่เท่ากัน
+            </label>
+          </div>
+          <div class="form-check mb-0 img-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-img-data-diff" onchange="selectExclusiveImageFilter(this)"
+                   style="border:2px solid #dc3545; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-img-data-diff" style="font-size:.85rem;">
+              <i class="bi bi-arrow-up-circle-fill text-danger me-1"></i>ข้อมูลต้นทางมากกว่าปลายทาง
+            </label>
+          </div>
+          <div class="form-check mb-0 img-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-img-dst-more" onchange="selectExclusiveImageFilter(this)"
+                   style="border:2px solid #4a148c; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-img-dst-more" style="font-size:.85rem;">
+              <i class="bi bi-arrow-down-circle-fill me-1" style="color:#4a148c;"></i>ข้อมูลต้นทางน้อยกว่าปลายทาง
+            </label>
+          </div>
+          <div class="form-check mb-0 img-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-img-need-update" onchange="selectExclusiveImageFilter(this)"
+                   style="border:2px solid #0891b2; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-img-need-update" style="font-size:.85rem;">
+              <i class="bi bi-pencil-square me-1" style="color:#0891b2;"></i>ต้อง update
+            </label>
+          </div>
+          <button class="btn btn-sm btn-warning fw-semibold ms-auto" id="btn-img-bulk-manage"
+                  onclick="manageImageBulkAll()" disabled>
+            <i class="bi bi-lightning-fill me-1"></i>จัดการข้อมูลทั้งหมดที่แสดง
+          </button>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="img-results" style="display:none;" class="mt-2">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted" id="img-summary" style="font-size:0.6em;"></span>
+          <button class="btn btn-success btn-sm" onclick="exportImageToXlsx()">
+            <i class="bi bi-file-earmark-excel me-1"></i>ส่งออก Excel
+          </button>
+        </div>
+        <div class="scroll-table" style="max-height:600px;">
+          <table class="table table-sm table-hover table-bordered mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th class="text-center" style="width:36px; white-space:nowrap;">#</th>
+                <th class="text-center" style="width:20%;">ชื่อตาราง</th>
+                <th class="text-center" style="width:140px; white-space:nowrap;">Src Count</th>
+                <th class="text-center" style="width:140px; white-space:nowrap;">Dst Count</th>
+                <th class="text-center" style="width:110px; white-space:nowrap;">ขาด</th>
+                <th class="text-center" style="width:130px; white-space:nowrap;">สถานะ</th>
+                <th class="text-center" style="width:140px; white-space:nowrap;">Sync</th>
+              </tr>
+            </thead>
+            <tbody id="img-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /tab9 -->
+
+  <!-- ===== TAB 11: PPL Tables ===== -->
+  <div class="card tab-card" id="tab11-content" style="border-radius:0 12px 12px 12px; display:none;">
+    <div class="card-body">
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="mb-1 fw-bold" style="font-size:1rem;">
+            <i class="bi bi-clipboard2-heart me-2" style="color:#c026d3;"></i>ตาราง PPL
+          </h5>
+          <p class="text-muted mb-0" style="font-size:.85rem;">ตรวจสอบตารางกลุ่ม PPL ที่กำหนดไว้</p>
+        </div>
+        <button class="btn btn-sm fw-semibold" style="background:#c026d3;color:#fff;" onclick="loadPplTables()">
+          <i class="bi bi-arrow-clockwise me-1"></i>โหลด / รีเฟรช
+        </button>
+      </div>
+
+      <!-- Filter checkboxes -->
+      <div class="border rounded p-2 mt-1 mb-2" style="background:#f8f9fa;">
+        <div class="form-check mb-1">
+          <input class="form-check-input" type="checkbox" id="chk-ppl-diff-only" onchange="applyPplFilter()"
+                 style="border:2px solid #6c757d; width:1.05em; height:1.05em;">
+          <label class="form-check-label fw-semibold text-secondary" for="chk-ppl-diff-only" style="font-size:.85rem;">
+            แสดงตารางที่ข้อมูล<span class="text-danger">ไม่ตรงกันทุกประเภท</span>
+            <span class="text-muted fw-normal">(ถ้าติ๊กนี้ ปุ่มจัดการทั้งหมดจะใช้ไม่ได้)</span>
+          </label>
+        </div>
+        <hr class="my-1">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+          <div class="form-check mb-0 ppl-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-ppl-missing-table" onchange="selectExclusivePplFilter(this)"
+                   style="border:2px solid #6c757d; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-ppl-missing-table" style="font-size:.85rem;">
+              <i class="bi bi-exclamation-circle-fill text-secondary me-1"></i>ไม่มีตารางปลายทาง
+            </label>
+          </div>
+          <div class="form-check mb-0 ppl-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-ppl-missing-col" onchange="selectExclusivePplFilter(this)"
+                   style="border:2px solid #dc3545; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-ppl-missing-col" style="font-size:.85rem;">
+              <i class="bi bi-layout-three-columns text-danger me-1"></i>ฟิลไม่เท่ากัน
+            </label>
+          </div>
+          <div class="form-check mb-0 ppl-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-ppl-data-diff" onchange="selectExclusivePplFilter(this)"
+                   style="border:2px solid #dc3545; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-ppl-data-diff" style="font-size:.85rem;">
+              <i class="bi bi-arrow-up-circle-fill text-danger me-1"></i>ข้อมูลต้นทางมากกว่าปลายทาง
+            </label>
+          </div>
+          <div class="form-check mb-0 ppl-excl-wrap">
+            <input class="form-check-input" type="checkbox" id="chk-ppl-dst-more" onchange="selectExclusivePplFilter(this)"
+                   style="border:2px solid #4a148c; width:1.05em; height:1.05em;">
+            <label class="form-check-label fw-semibold" for="chk-ppl-dst-more" style="font-size:.85rem;">
+              <i class="bi bi-arrow-down-circle-fill me-1" style="color:#4a148c;"></i>ข้อมูลต้นทางน้อยกว่าปลายทาง
+            </label>
+          </div>
+          <button class="btn btn-sm btn-warning fw-semibold ms-auto" id="btn-ppl-bulk-manage"
+                  onclick="managePplBulkAll()" disabled>
+            <i class="bi bi-lightning-fill me-1"></i>จัดการข้อมูลทั้งหมดที่แสดง
+          </button>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="ppl-results" style="display:none;" class="mt-2">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted" id="ppl-summary" style="font-size:0.6em;"></span>
+          <button class="btn btn-success btn-sm" onclick="exportPplToXlsx()">
+            <i class="bi bi-file-earmark-excel me-1"></i>ส่งออก Excel
+          </button>
+        </div>
+        <div class="scroll-table" style="max-height:600px;">
+          <table class="table table-sm table-hover table-bordered mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th class="text-center" style="width:36px; white-space:nowrap;">#</th>
+                <th class="text-center" style="width:20%;">ชื่อตาราง</th>
+                <th class="text-center" style="width:140px; white-space:nowrap;">Src Count</th>
+                <th class="text-center" style="width:140px; white-space:nowrap;">Dst Count</th>
+                <th class="text-center" style="width:110px; white-space:nowrap;">ขาด</th>
+                <th class="text-center" style="width:130px; white-space:nowrap;">สถานะ</th>
+                <th class="text-center" style="width:140px; white-space:nowrap;">Sync</th>
+              </tr>
+            </thead>
+            <tbody id="ppl-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /tab11 -->
 
 </div><!-- /container -->
 <div style="height:60px;"></div>
@@ -502,6 +1287,12 @@
         <div class="d-flex gap-2">
           <button type="button" class="btn btn-success" id="modal-sync-btn" onclick="syncFromModal()" style="display:none;">
             <i class="bi bi-cloud-upload-fill me-1"></i>Sync ข้อมูลทั้งหมดไปปลายทาง
+          </button>
+          <button type="button" class="btn btn-info fw-semibold" id="modal-update-btn" onclick="updateChangedFromModal()" style="display:none;color:#fff;">
+            <i class="bi bi-pencil-square me-1"></i>อัพเดทข้อมูลที่เปลี่ยนแปลง
+          </button>
+          <button type="button" class="btn btn-success" id="modal-export-btn" onclick="exportModalToXlsx()" style="display:none;">
+            <i class="bi bi-file-earmark-excel me-1"></i>ส่งออก Excel
           </button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
         </div>
@@ -637,6 +1428,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script>
 // ─── State ───────────────────────────────────────────────────────────────────
 let currentTable = '';
@@ -651,8 +1443,24 @@ function showTab(n) {
   currentTab = n;
   document.getElementById('tab1-content').style.display = n === 1 ? '' : 'none';
   document.getElementById('tab2-content').style.display = n === 2 ? '' : 'none';
+  document.getElementById('tab3-content').style.display = n === 3 ? '' : 'none';
+  document.getElementById('tab4-content').style.display = n === 4 ? '' : 'none';
+  document.getElementById('tab5-content').style.display = n === 5 ? '' : 'none';
   document.getElementById('tab1-link').classList.toggle('active', n === 1);
   document.getElementById('tab2-link').classList.toggle('active', n === 2);
+  document.getElementById('tab3-link').classList.toggle('active', n === 3);
+  document.getElementById('tab4-link').classList.toggle('active', n === 4);
+  document.getElementById('tab5-link').classList.toggle('active', n === 5);
+  // M6=Log(tab8), M7=Image(tab9), M8=PPL(tab11), M9=PG Serial(tab6), M10=MySQL Serial(tab7)
+  document.getElementById('tab8-content').style.display  = n === 6  ? '' : 'none';
+  document.getElementById('tab9-content').style.display  = n === 7  ? '' : 'none';
+  document.getElementById('tab11-content').style.display = n === 8  ? '' : 'none';
+  document.getElementById('tab6-content').style.display  = n === 9  ? '' : 'none';
+  document.getElementById('tab7-content').style.display  = n === 10 ? '' : 'none';
+  [6,7,8,9,10].forEach(i =>
+    document.getElementById(`tab${i}-link`).classList.toggle('active', n === i));
+  if (n === 9)  { _seqInited  = false; initSeqTable();  }
+  if (n === 10) { _seq7Inited = false; initSeq7Table(); }
 }
 
 // ─── Port default when type changes ──────────────────────────────────────────
@@ -840,7 +1648,13 @@ async function loadTables() {
     const data = await res.json();
     if (data.status === 'error') { alert('โหลดตารางไม่สำเร็จ: ' + data.message); return; }
 
-    allTables = data.tables || [];
+    const _basicSet    = new Set([...BASIC_TABLES, ...HIDDEN_TABLES].map(t => t.toLowerCase()));
+    const _m1ShowAlso  = new Set(['icd_doctor_codemap']);
+    allTables = (data.tables || []).filter(t => {
+      const tl = t.toLowerCase();
+      if (_m1ShowAlso.has(tl)) return true;
+      return !_basicSet.has(tl) && !tl.includes('_log') && tl !== 'ksklog';
+    });
     const input = document.getElementById('table-search-input');
     input.placeholder = `พิมพ์ค้นหาจาก ${allTables.length} ตาราง...`;
     input.value = '';
@@ -1008,6 +1822,17 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('btn-toggle-controls').innerHTML = '<i class="bi bi-chevron-down"></i> แสดง';
     });
   }
+
+  // เมื่อ browser auto-restore ค่า checkbox หลัง refresh ให้ sync สถานะ disable ด้วย
+  [
+    { ids: _EXCL_IDS,      fn: selectExclusiveFilter      },
+    { ids: _ASM_EXCL_IDS,  fn: selectExclusiveAsmFilter   },
+    { ids: _IMG_EXCL_IDS,  fn: selectExclusiveImageFilter },
+    { ids: _LOG_EXCL_IDS,  fn: selectExclusiveLogFilter   },
+  ].forEach(({ ids, fn }) => {
+    const checkedEl = ids.map(id => document.getElementById(id)).find(cb => cb && cb.checked);
+    if (checkedEl) fn(checkedEl);
+  });
 });
 
 // ─── Menu 2: Check all tables ─────────────────────────────────────────────────
@@ -1054,9 +1879,8 @@ async function onCheckAllTables() {
 
     prefixResults = results;
 
-    // ถ้า checkbox แสดงเฉพาะไม่เท่ากันถูกติ๊กอยู่ → filter ทันที
-    const diffOnly = document.getElementById('chk-diff-only').checked;
-    renderPrefixRows(diffOnly ? prefixResults.filter(r => r.status !== 'ok') : prefixResults);
+    renderPrefixRows(_getFilteredPrefixRows(), 'prefix-tbody', null,
+      document.getElementById('chk-need-update').checked);
 
     document.getElementById('prefix-results').style.display = '';
   } catch (e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
@@ -1065,6 +1889,17 @@ async function onCheckAllTables() {
 
 // ─── Menu 2: Load prefixes ────────────────────────────────────────────────────
 async function loadPrefixes() {
+  // เคลียตัวอักษรที่เลือกและข้อมูลที่แสดง
+  document.querySelectorAll('.prefix-btn').forEach(b => {
+    b.classList.remove('active-prefix', 'btn-dark');
+    b.classList.add('btn-outline-dark');
+  });
+  prefixResults = [];
+  document.getElementById('prefix-results').style.display = 'none';
+  document.getElementById('prefix-summary').textContent   = '';
+  document.getElementById('prefix-label').textContent     = '';
+  document.getElementById('prefix-tbody').innerHTML       = '';
+
   showSpinner();
   try {
     const res  = await fetch('/api/tables');
@@ -1128,9 +1963,16 @@ async function compareByPrefix(prefix) {
     document.getElementById('prefix-summary').textContent =
       `ทั้งหมด ${results.length} ตาราง  |  เท่ากัน: ${okCnt}  |  ต่างกัน: ${diffCnt}  |  ไม่มีในปลายทาง: ${misCnt}`;
 
-    prefixResults = results;
-    const diffOnly = document.getElementById('chk-diff-only').checked;
-    renderPrefixRows(diffOnly ? prefixResults.filter(r => r.status !== 'ok') : prefixResults);
+    const _basicSetM2 = new Set([...BASIC_TABLES, ...HIDDEN_TABLES].map(t => t.toLowerCase()));
+    prefixResults = results.filter(r => {
+      const tl = r.table.toLowerCase();
+      return !tl.startsWith('asm_') && !_basicSetM2.has(tl)
+          && !tl.includes('_log') && tl !== 'ksklog'
+          && !tl.includes('image') && tl !== 'opdscan';
+    });
+    renderPrefixRows(_getFilteredPrefixRows(), 'prefix-tbody', null,
+      document.getElementById('chk-need-update').checked);
+    updateBulkBtn();
     document.getElementById('prefix-results').style.display = '';
   } catch (e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
   finally { hideSpinner(); }
@@ -1139,15 +1981,416 @@ async function compareByPrefix(prefix) {
 // ─── Prefix results state & render ───────────────────────────────────────────
 let prefixResults = [];
 
-function applyDiffFilter() {
-  const diffOnly = document.getElementById('chk-diff-only').checked;
-  const rows = diffOnly ? prefixResults.filter(r => r.status !== 'ok') : prefixResults;
-  renderPrefixRows(rows);
+function _getFilteredPrefixRows() {
+  const diffOnly   = document.getElementById('chk-diff-only').checked;
+  const missTbl    = document.getElementById('chk-missing-table').checked;
+  const missCol    = document.getElementById('chk-missing-col').checked;
+  const dataDiff   = document.getElementById('chk-data-diff').checked;
+  const dstMore    = document.getElementById('chk-dst-more').checked;
+  const needUpdate = document.getElementById('chk-need-update').checked;
+  if (diffOnly)   return prefixResults.filter(r => r.status !== 'ok');
+  if (needUpdate) return prefixResults.filter(r => r.status === 'diff' && r.diff > 0);
+  if (missTbl || missCol || dataDiff || dstMore) {
+    return prefixResults.filter(r => {
+      if (missTbl  && r.status === 'missing')             return true;
+      if (missCol  && r.has_missing_cols)                 return true;
+      if (dataDiff && r.status === 'diff' && r.diff > 0)  return true;
+      if (dstMore  && r.status === 'diff' && r.diff < 0)  return true;
+      return false;
+    });
+  }
+  return prefixResults;
 }
 
-function renderPrefixRows(rows) {
-  const tbody = document.getElementById('prefix-tbody');
+const _EXCL_IDS = ['chk-missing-table','chk-missing-col','chk-data-diff','chk-dst-more','chk-need-update'];
+
+function selectExclusiveFilter(el) {
+  _EXCL_IDS.filter(id => id !== el.id).forEach(id => {
+    const cb  = document.getElementById(id);
+    const wrap = cb.closest('.excl-filter-wrap');
+    cb.checked  = false;
+    cb.disabled = el.checked;
+    wrap.style.opacity      = el.checked ? '0.35' : '';
+    wrap.style.pointerEvents = el.checked ? 'none' : '';
+  });
+  applyPrefixFilter();
+}
+
+function applyDiffFilter()   { applyPrefixFilter(); }
+function applyPrefixFilter() {
+  renderPrefixRows(_getFilteredPrefixRows(), 'prefix-tbody', null,
+    document.getElementById('chk-need-update').checked);
+  updateBulkBtn();
+}
+
+function updateBulkBtn() {
+  const diffOnly   = document.getElementById('chk-diff-only').checked;
+  const needUpdate = document.getElementById('chk-need-update').checked;
+  const anySpec    = ['chk-missing-table','chk-missing-col','chk-data-diff','chk-dst-more','chk-need-update']
+                       .some(id => document.getElementById(id).checked);
+  document.getElementById('btn-bulk-manage').disabled = !anySpec || diffOnly;
+}
+
+async function bulkUpdateChanged() {
+  const tables = _getSelectedTables();
+  if (!tables.length) { alert('กรุณาเลือกตารางที่ต้องการ Update'); return; }
+  if (!confirm(`Update ข้อมูลที่เปลี่ยนแปลงใน ${tables.length} ตาราง?\n\nระบบจะตรวจสอบทุก record ที่มีอยู่ทั้งสองฝั่ง\nและ update field ที่ต่างกัน — อาจใช้เวลานาน`)) return;
+
+  showSpinner();
+  let ok = 0, err = 0, totalUpdated = 0;
+  document.getElementById('bulk-progress-text').textContent = 'กำลัง Update...';
+
+  for (const tbl of tables) {
+    const rc  = document.getElementById(`bulk-result-${tbl}`);
+    const row = document.getElementById(`bulk-row-${tbl}`);
+    if (rc) rc.innerHTML = '<span class="spinner-border spinner-border-sm text-info"></span>';
+    if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    try {
+      const d = await (await fetch('/api/update-changed-records', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: tbl })
+      })).json();
+      if (d.status === 'ok') {
+        if (rc) rc.innerHTML = `<span class="text-info"><i class="bi bi-pencil-square me-1"></i>${d.updated} รายการ (ตรวจ ${d.checked})</span>`;
+        if (row) row.style.background = d.updated > 0 ? '#eff6ff' : '#f0fdf4';
+        totalUpdated += d.updated; ok++;
+      } else {
+        if (rc) { const sp = document.createElement('span'); sp.className='badge bg-danger'; sp.style.cursor='pointer'; sp.textContent='⚠ ผิดพลาด (คลิก)'; sp.addEventListener('click',()=>alert('ผิดพลาด:\n'+(d.message||''))); rc.innerHTML=''; rc.appendChild(sp); }
+        err++;
+      }
+    } catch(e) { if (rc) rc.textContent='error'; err++; }
+  }
+  hideSpinner();
+  document.getElementById('bulk-progress-text').textContent =
+    `เสร็จสิ้น — อัปเดต ${totalUpdated} รายการ จาก ${ok} ตาราง${err?` (ผิดพลาด ${err})` : ''}`;
+}
+
+// ─── Bulk Manage Modal (shared by Menu 2 & 3) ────────────────────────────────
+let _bulkModal      = null;
+let _bulkResultsRef = null;   // points to prefixResults or asmResults
+
+function manageBulkAll() {
+  _bulkResultsRef = prefixResults;
+  const needUpdate = document.getElementById('chk-need-update').checked;
+  _openBulkModal(
+    _getFilteredPrefixRows(),
+    document.getElementById('chk-missing-table').checked,
+    document.getElementById('chk-missing-col').checked,
+    document.getElementById('chk-data-diff').checked,
+    needUpdate
+  );
+}
+
+function _openBulkModal(rows, missTbl, missCol, dataDiff, needUpdate = false) {
+  if (!rows.length) { alert('ไม่มีข้อมูลที่จะจัดการ'); return; }
+
+  // Action buttons
+  const btnContainer = document.getElementById('bulk-action-buttons');
+  btnContainer.innerHTML = '';
+  if (missTbl) {
+    const b = document.createElement('button');
+    b.className = 'btn btn-sm btn-danger fw-semibold';
+    b.innerHTML = '<i class="bi bi-database-add me-1"></i>สร้างตารางทั้งหมดที่เลือก';
+    b.onclick   = () => bulkCreateTables();
+    btnContainer.appendChild(b);
+  }
+  if (missCol) {
+    const b = document.createElement('button');
+    b.className = 'btn btn-sm btn-danger fw-semibold';
+    b.innerHTML = '<i class="bi bi-layout-three-columns me-1"></i>เพิ่มฟิลให้กับทุกตารางที่เลือก';
+    b.onclick   = () => bulkAddColumns();
+    btnContainer.appendChild(b);
+  }
+  if (dataDiff) {
+    const b = document.createElement('button');
+    b.className = 'btn btn-sm btn-danger fw-semibold';
+    b.innerHTML = '<i class="bi bi-cloud-upload-fill me-1"></i>Sync ข้อมูลทุกตารางที่เลือก';
+    b.onclick   = () => bulkSyncTables();
+    btnContainer.appendChild(b);
+  }
+  if (needUpdate) {
+    const b = document.createElement('button');
+    b.className = 'btn btn-sm btn-info fw-semibold';
+    b.style.color = '#fff';
+    b.innerHTML = '<i class="bi bi-pencil-square me-1"></i>Update ที่เปลี่ยนแปลง';
+    b.onclick   = () => bulkUpdateChanged();
+    btnContainer.appendChild(b);
+  }
+
+  // Populate table
+  const tbody = document.getElementById('bulk-tbody');
   tbody.innerHTML = '';
+  document.getElementById('bulk-select-all').checked           = false;
+  document.getElementById('bulk-selected-count').textContent   = '0 เลือก';
+  document.getElementById('bulk-progress-text').textContent    = '';
+
+  rows.forEach((r, i) => {
+    const srcMore  = r.status === 'diff' && r.diff > 0;
+    const dstMore  = r.status === 'diff' && r.diff < 0;
+    let rowStyle   = '';
+    if      (r.status === 'ok') rowStyle = 'color:#1b5e20;';
+    else if (srcMore)           rowStyle = 'color:#b71c1c;font-weight:bold;';
+    else if (dstMore)           rowStyle = 'color:#4a148c;font-weight:bold;';
+
+    const badge = r.status === 'ok'
+      ? '<span class="badge bg-success">เท่ากัน</span>'
+      : r.status === 'missing'
+        ? '<span class="badge bg-secondary"><i class="bi bi-exclamation-circle"></i> ไม่มีตาราง</span>'
+        : srcMore
+          ? '<span class="badge bg-danger">ต่างกัน</span>'
+          : '<span class="badge" style="background:#4a148c;">ปลายทางมากกว่า</span>';
+
+    const srcCnt = r.source_count >= 0 ? fmtNum(r.source_count) : '-';
+    const dstCnt = r.destination_count >= 0
+      ? fmtNum(r.destination_count)
+      : '<span class="fst-italic text-muted small">ไม่มีตาราง</span>';
+    const diff   = r.status === 'missing' ? '-'
+      : r.diff > 0 ? `<span class="fw-bold text-danger">+${fmtNum(r.diff)}</span>`
+      : r.diff < 0 ? `<span class="fw-bold" style="color:#4a148c;">${fmtNum(r.diff)}</span>`
+      : '<span class="text-success">0</span>';
+
+    const tr = document.createElement('tr');
+    tr.id = `bulk-row-${r.table}`;
+    tr.style.cssText = rowStyle;
+    tr.innerHTML = `
+      <td class="text-center">
+        <input class="form-check-input bulk-chk" type="checkbox"
+               data-table="${escHtml(r.table)}" onchange="updateBulkCount()">
+      </td>
+      <td class="text-center">${i + 1}</td>
+      <td style="font-family:'Courier New',monospace;font-size:.85rem;">${escHtml(r.table)}</td>
+      <td class="text-end">${srcCnt}</td>
+      <td class="text-end">${dstCnt}</td>
+      <td class="text-end">${diff}</td>
+      <td class="text-center">${badge}</td>
+      <td class="text-center" id="bulk-result-${escHtml(r.table)}">
+        <span class="text-muted">—</span>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+
+  _bulkModal = new bootstrap.Modal(document.getElementById('bulkManageModal'));
+  _bulkModal.show();
+}
+
+function selectAllBulk(checked) {
+  document.querySelectorAll('.bulk-chk').forEach(cb => cb.checked = checked);
+  updateBulkCount();
+}
+
+function updateBulkCount() {
+  const total = document.querySelectorAll('.bulk-chk').length;
+  const count = document.querySelectorAll('.bulk-chk:checked').length;
+  document.getElementById('bulk-selected-count').textContent = `${count} เลือก`;
+  document.getElementById('bulk-select-all').checked = count > 0 && count === total;
+}
+
+function _getSelectedTables() {
+  return [...document.querySelectorAll('.bulk-chk:checked')].map(cb => cb.dataset.table);
+}
+
+async function bulkSyncTables() {
+  const tables = _getSelectedTables();
+  if (!tables.length) { alert('กรุณาเลือกตารางที่ต้องการ Sync'); return; }
+  if (!confirm(`Sync ${tables.length} ตารางที่เลือก?`)) return;
+
+  showSpinner();
+  let ok = 0, err = 0;
+  document.getElementById('bulk-progress-text').textContent = 'กำลัง Sync...';
+
+  for (const tbl of tables) {
+    const rc  = document.getElementById(`bulk-result-${tbl}`);
+    const row = document.getElementById(`bulk-row-${tbl}`);
+    if (rc) rc.innerHTML = '<span class="spinner-border spinner-border-sm text-primary"></span>';
+    // เลื่อน scroll ไปที่ row ที่กำลังทำ
+    if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    try {
+      const d = await (await fetch('/api/sync-table', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: tbl })
+      })).json();
+      if (d.status === 'ok') {
+        if (rc) rc.innerHTML = `<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>${d.inserted} รายการ</span>`;
+        const rec = (_bulkResultsRef || prefixResults).find(r => r.table === tbl);
+        if (rec) { rec.status = 'ok'; rec.diff = 0; rec.destination_count = rec.source_count; }
+        const outer = document.getElementById(`sync-cell-${tbl}`);
+        if (outer) outer.innerHTML = `<span class="text-success small"><i class="bi bi-check-circle-fill"></i> ${d.inserted} รายการ</span>`;
+        ok++;
+      } else {
+        if (rc) rc.innerHTML = `<span class="text-danger small"><i class="bi bi-x-circle-fill me-1"></i>${d.message || 'error'}</span>`;
+        err++;
+      }
+    } catch { if (rc) rc.innerHTML = '<span class="text-danger small">error</span>'; err++; }
+  }
+  hideSpinner();
+  document.getElementById('bulk-progress-text').textContent = `เสร็จสิ้น — สำเร็จ ${ok}  ผิดพลาด ${err}`;
+}
+
+async function bulkCreateTables() {
+  const tables = _getSelectedTables();
+  if (!tables.length) { alert('กรุณาเลือกตารางที่ต้องการสร้าง'); return; }
+  if (!confirm(`สร้าง ${tables.length} ตารางที่เลือก?`)) return;
+
+  showSpinner();
+  let ok = 0, err = 0;
+  document.getElementById('bulk-progress-text').textContent = 'กำลังสร้างตาราง...';
+
+  for (const tbl of tables) {
+    const rc  = document.getElementById(`bulk-result-${tbl}`);
+    const row = document.getElementById(`bulk-row-${tbl}`);
+    if (rc) rc.innerHTML = '<span class="spinner-border spinner-border-sm text-primary"></span>';
+    if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    try {
+      const st = await (await fetch('/api/get-table-structure', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: tbl })
+      })).json();
+      if (st.status === 'error') {
+        if (rc) rc.innerHTML = `<span class="text-danger small"><i class="bi bi-x-circle-fill me-1"></i>${st.message || 'error'}</span>`;
+        err++; continue;
+      }
+      const cr = await (await fetch('/api/create-table', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: tbl, create_sql: st.create_sql })
+      })).json();
+      if (cr.status === 'ok') {
+        if (rc) rc.innerHTML = `<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>สร้างตารางสำเร็จ</span>`;
+        const rec = (_bulkResultsRef || prefixResults).find(r => r.table === tbl);
+        if (rec) { rec.status = 'diff'; rec.destination_count = 0; }
+        const outer = document.getElementById(`sync-cell-${tbl}`);
+        if (outer) outer.innerHTML = `<span class="text-success small"><i class="bi bi-check-circle-fill"></i> สร้างสำเร็จ</span>`;
+        ok++;
+      } else {
+        if (rc) rc.innerHTML = `<span class="text-danger small"><i class="bi bi-x-circle-fill me-1"></i>${cr.message || 'error'}</span>`;
+        err++;
+      }
+    } catch { if (rc) rc.innerHTML = '<span class="text-danger small">error</span>'; err++; }
+  }
+  hideSpinner();
+  document.getElementById('bulk-progress-text').textContent = `เสร็จสิ้น — สำเร็จ ${ok}  ผิดพลาด ${err}`;
+}
+
+async function bulkAddColumns() {
+  const tables = _getSelectedTables();
+  if (!tables.length) { alert('กรุณาเลือกตารางที่ต้องการเพิ่มฟิล'); return; }
+  if (!confirm(`เพิ่มฟิลที่ขาดให้กับ ${tables.length} ตารางที่เลือก?`)) return;
+
+  showSpinner();
+  let ok = 0, err = 0;
+  document.getElementById('bulk-progress-text').textContent = 'กำลังเพิ่มฟิล...';
+
+  for (const tbl of tables) {
+    const rc  = document.getElementById(`bulk-result-${tbl}`);
+    const row = document.getElementById(`bulk-row-${tbl}`);
+    if (rc) rc.innerHTML = '<span class="spinner-border spinner-border-sm text-primary"></span>';
+    if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    try {
+      const cd = await (await fetch('/api/compare-columns', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: tbl })
+      })).json();
+      if (cd.status === 'error') {
+        if (rc) rc.innerHTML = `<span class="text-danger small"><i class="bi bi-x-circle-fill me-1"></i>${cd.message || 'error'}</span>`;
+        err++; continue;
+      }
+      if (!cd.missing_in_dest?.length) {
+        if (rc) rc.innerHTML = `<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>ไม่มีฟิลที่ขาด</span>`;
+        ok++; continue;
+      }
+      const ad = await (await fetch('/api/add-columns', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: tbl, columns: cd.missing_in_dest })
+      })).json();
+      if (ad.status === 'ok') {
+        const errTxt = ad.errors?.length ? ` (ผิดพลาด ${ad.errors.length})` : '';
+        if (rc) rc.innerHTML = `<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>เพิ่ม ${ad.added?.length || 0} ฟิล${errTxt}</span>`;
+        const rec = (_bulkResultsRef || prefixResults).find(r => r.table === tbl);
+        if (rec) rec.has_missing_cols = false;
+        const outer = document.getElementById(`sync-cell-${tbl}`);
+        if (outer) outer.innerHTML = `<span class="text-success small"><i class="bi bi-check-circle-fill"></i> เพิ่ม ${ad.added?.length || 0} ฟิล${errTxt}</span>`;
+        ok++;
+      } else {
+        if (rc) rc.innerHTML = `<span class="text-danger small"><i class="bi bi-x-circle-fill me-1"></i>${ad.message || 'error'}</span>`;
+        err++;
+      }
+    } catch { if (rc) rc.innerHTML = '<span class="text-danger small">error</span>'; err++; }
+  }
+  hideSpinner();
+  document.getElementById('bulk-progress-text').textContent = `เสร็จสิ้น — สำเร็จ ${ok}  ผิดพลาด ${err}`;
+}
+
+// ─── Field Diff Count (per-table, progressive) ───────────────────────────────
+let _fdcVersion = 0;
+
+function _setFdcCell(tableName, count) {
+  const cell = document.getElementById(`field-diff-count-${tableName}`);
+  if (!cell) return;
+  if (count <= 0) {
+    const row = cell.closest('tr');
+    if (row) row.style.display = 'none';
+  } else {
+    cell.textContent = fmtNum(count);
+    cell.style.color = '#b71c1c';
+    cell.style.fontWeight = 'bold';
+  }
+}
+
+async function loadFieldDiffCounts(tbodyId) {
+  const version = ++_fdcVersion;
+  const cells = document.querySelectorAll(`#${tbodyId} [id^="field-diff-count-"]`);
+  if (!cells.length) return;
+
+  const tableNames = Array.from(cells).map(c => c.id.replace('field-diff-count-', ''));
+  cells.forEach(c => {
+    c.innerHTML = '<span class="spinner-border spinner-border-sm" style="width:.65rem;height:.65rem;border-width:1.5px;color:#0891b2;"></span>';
+  });
+
+  const CONCURRENCY = 3;
+
+  async function fetchOne(tableName) {
+    if (version !== _fdcVersion) return;
+    try {
+      const res  = await fetch('/api/field-diff-count', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: tableName })
+      });
+      const data = await res.json();
+      if (version !== _fdcVersion) return;
+      _setFdcCell(tableName, data.status === 'ok' ? data.count : -1);
+    } catch (_) {
+      if (version !== _fdcVersion) return;
+      _setFdcCell(tableName, -1);
+    }
+  }
+
+  // ส่ง request 3 ตารางพร้อมกัน แล้วไปชุดต่อไป → ตัวเลขปรากฏทีละกลุ่ม
+  for (let i = 0; i < tableNames.length; i += CONCURRENCY) {
+    if (version !== _fdcVersion) return;
+    await Promise.all(tableNames.slice(i, i + CONCURRENCY).map(t => fetchOne(t)));
+  }
+}
+
+function renderPrefixRows(rows, tbodyId = 'prefix-tbody', descMap = null, needUpdateMode = false) {
+  const tbody = document.getElementById(tbodyId);
+  tbody.innerHTML = '';
+
+  // Update column headers to match mode
+  const _tbl = tbody.closest('table');
+  if (_tbl) {
+    const _ths = _tbl.querySelectorAll('thead tr th');
+    if (_ths.length >= 7) {
+      if (needUpdateMode) {
+        _ths[4].innerHTML = '<i class="bi bi-pencil-square me-1" style="color:#90caf9;"></i>ต้องอัพเดท';
+        _ths[5].textContent = '';
+        _ths[6].textContent = '';
+      } else {
+        _ths[4].textContent = 'ขาด';
+        _ths[5].textContent = 'สถานะ';
+        _ths[6].textContent = 'Sync';
+      }
+    }
+  }
 
   rows.forEach((r, i) => {
     const tr = document.createElement('tr');
@@ -1189,59 +2432,441 @@ function renderPrefixRows(rows) {
           : '<span style="color:#1b5e20;">0</span>';
 
     const tdName = document.createElement('td');
-    if (srcMore) {
+    if (needUpdateMode && r.status !== 'missing') {
+      tdName.innerHTML = `<a href="#" style="font-family:'Courier New',monospace;color:inherit;text-decoration:underline dotted;cursor:pointer;"
+        onclick="openFieldDiffDetail('${escHtml(r.table)}');return false;">${escHtml(r.table)}</a>`;
+    } else if (srcMore) {
       tdName.innerHTML = `<a href="#" style="font-family:'Courier New',monospace;color:inherit;text-decoration:underline dotted;cursor:pointer;"
         onclick="openTableDetail('${escHtml(r.table)}');return false;">${escHtml(r.table)}</a>`;
     } else {
       tdName.innerHTML = `<span style="font-family:'Courier New',monospace;color:inherit;">${escHtml(r.table)}</span>`;
     }
 
-    // Sync cell — Sync เฉพาะ srcMore, ตรวจสอบฟิลสำหรับทุกตารางที่มีในปลายทาง
+    // Sync cell
     const tdSync = document.createElement('td');
     tdSync.className = 'text-center';
     tdSync.id = `sync-cell-${r.table}`;
 
-    if (srcMore) {
-      const btn = document.createElement('button');
-      btn.className   = 'btn btn-sm btn-warning';
-      btn.style.color = '#000';
-      btn.style.fontWeight = 'normal';
-      btn.innerHTML   = '<i class="bi bi-cloud-upload-fill me-1"></i>Sync';
-      btn.onclick     = () => syncPrefixTable(r.table, btn);
-      tdSync.appendChild(btn);
-    }
+    if (!needUpdateMode) {
+      if (srcMore) {
+        const btn = document.createElement('button');
+        btn.className   = 'btn btn-sm btn-warning';
+        btn.style.color = '#000';
+        btn.style.fontWeight = 'normal';
+        btn.innerHTML   = '<i class="bi bi-cloud-upload-fill me-1"></i>Sync';
+        btn.onclick     = () => syncPrefixTable(r.table, btn);
+        tdSync.appendChild(btn);
+      }
 
-    if (r.status === 'missing') {
-      const createBtn = document.createElement('button');
-      createBtn.className = 'btn btn-sm btn-primary';
-      createBtn.style.fontWeight = 'normal';
-      createBtn.innerHTML = '<i class="bi bi-database-add me-1"></i>สร้างตาราง';
-      createBtn.id        = `create-btn-${r.table}`;
-      createBtn.onclick   = () => openCreateTable(r.table);
-      tdSync.appendChild(createBtn);
-    }
+      if (r.status === 'missing') {
+        const createBtn = document.createElement('button');
+        createBtn.className = 'btn btn-sm btn-primary';
+        createBtn.style.fontWeight = 'normal';
+        createBtn.innerHTML = '<i class="bi bi-database-add me-1"></i>สร้างตาราง';
+        createBtn.id        = `create-btn-${r.table}`;
+        createBtn.onclick   = () => openCreateTable(r.table);
+        tdSync.appendChild(createBtn);
+      }
 
-    if (r.has_missing_cols) {
-      const colBtn = document.createElement('button');
-      colBtn.className = 'btn btn-sm btn-danger ms-1';
-      colBtn.style.fontWeight = 'normal';
-      colBtn.title     = `พบ ${r.missing_col_count} ฟิลที่ขาดในปลายทาง`;
-      colBtn.innerHTML = `<i class="bi bi-layout-three-columns me-1"></i>ตรวจสอบฟิล (${r.missing_col_count})`;
-      colBtn.id        = `col-btn-${r.table}`;
-      colBtn.onclick   = () => openColumnDetail(r.table);
-      tdSync.appendChild(colBtn);
+      if (r.has_missing_cols) {
+        const colBtn = document.createElement('button');
+        colBtn.className = 'btn btn-sm btn-danger ms-1';
+        colBtn.style.fontWeight = 'normal';
+        colBtn.title     = `พบ ${r.missing_col_count} ฟิลที่ขาดในปลายทาง`;
+        colBtn.innerHTML = `<i class="bi bi-layout-three-columns me-1"></i>ตรวจสอบฟิล (${r.missing_col_count})`;
+        colBtn.id        = `col-btn-${r.table}`;
+        colBtn.onclick   = () => openColumnDetail(r.table);
+        tdSync.appendChild(colBtn);
+      }
     }
 
     tr.innerHTML = `<td>${i + 1}</td>`;
     tr.appendChild(tdName);
-    tr.insertAdjacentHTML('beforeend',
-      `<td class="text-end">${srcCnt}</td>
-       <td class="text-end">${dstCnt}</td>
-       <td class="text-end">${diff}</td>
-       <td class="text-center">${badge}</td>`);
+    if (descMap) {
+      const tdD = document.createElement('td');
+      tdD.style.fontSize = '.82rem';
+      tdD.style.color = '#555';
+      tdD.textContent = descMap[r.table] || '';
+      tr.appendChild(tdD);
+    }
+
+    if (needUpdateMode) {
+      tr.insertAdjacentHTML('beforeend',
+        `<td class="text-end" style="color:#888;font-size:.85em;">${srcCnt}</td>
+         <td class="text-end" style="color:#888;font-size:.85em;">${dstCnt}</td>
+         <td class="text-end"><span id="field-diff-count-${r.table}" style="color:#0891b2;font-weight:bold;">-</span></td>
+         <td></td>`);
+    } else {
+      tr.insertAdjacentHTML('beforeend',
+        `<td class="text-end">${srcCnt}</td>
+         <td class="text-end">${dstCnt}</td>
+         <td class="text-end">${diff}</td>
+         <td class="text-center">${badge}</td>`);
+    }
     tr.appendChild(tdSync);
     tbody.appendChild(tr);
   });
+
+  // หลังจาก render เสร็จ ให้โหลดจำนวนที่ต้องอัพเดทอัตโนมัติ
+  if (needUpdateMode && rows.length > 0) {
+    setTimeout(() => loadFieldDiffCounts(tbodyId), 0);
+  }
+}
+
+// ─── Field Diff Modal ─────────────────────────────────────────────────────────
+async function openFieldDiffDetail(tableName) {
+  modalTableName = tableName;
+
+  // คำนวณ cutoff 3 เดือนย้อนหลัง (แสดงทันที ก่อน API ตอบ)
+  const _today  = new Date();
+  const _cutoff = new Date(_today);
+  _cutoff.setDate(_cutoff.getDate() - 90);
+  const _cutoffStr = _cutoff.toISOString().slice(0, 10);
+
+  document.getElementById('modal-table-title').textContent  =
+    tableName + ' — ข้อมูลที่ต้อง Update';
+  document.getElementById('modal-table-counts').innerHTML =
+    `<span style="font-size:.75rem;opacity:1;">` +
+    `<i class="bi bi-calendar3 me-1"></i>กรอง 3 เดือนย้อนหลัง: <strong>>= ${_cutoffStr}</strong>` +
+    `<span id="modal-diff-count-badge" class="ms-2"></span></span>`;
+  document.getElementById('modal-alert').innerHTML          = '';
+  document.getElementById('modal-sync-result').innerHTML    = '';
+  document.getElementById('modal-footer-info').textContent  = '';
+  document.getElementById('modal-loading').style.display     = '';
+  document.getElementById('modal-table-wrap').style.display  = 'none';
+  document.getElementById('modal-sync-btn').style.display    = 'none';
+  document.getElementById('modal-update-btn').style.display  = 'none';
+  document.getElementById('modal-export-btn').style.display  = 'none';
+  document.getElementById('modal-truncated-note').style.display = 'none';
+
+  const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('tableDetailModal'));
+  modal.show();
+
+  try {
+    const res  = await fetch('/api/field-diff', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: tableName })
+    });
+    const data = await res.json();
+
+    document.getElementById('modal-loading').style.display = 'none';
+
+    if (data.status === 'error') {
+      document.getElementById('modal-alert').innerHTML =
+        `<div class="alert alert-danger"><i class="bi bi-x-circle-fill me-1"></i>${escHtml(data.message)}</div>`;
+      return;
+    }
+
+    // อัปเดต badge หลัง API ตอบ
+    const _dateCol  = data.date_col || '';
+    const _colLabel = _dateCol ? ` (${_dateCol})` : ' (ไม่พบคอลัมน์วันที่)';
+    const _badge    = document.getElementById('modal-diff-count-badge');
+    if (_badge) {
+      _badge.innerHTML =
+        `&nbsp;|&nbsp;PK ร่วม: <strong>${fmtNum(data.common_count)}</strong>` +
+        `&nbsp;|&nbsp;ต้อง Update: <strong class="text-warning">${fmtNum(data.total)}</strong>${_colLabel}`;
+    }
+
+    // อัพเดตจำนวนในแถวตาราง (ถ้ามี cell อยู่)
+    const _rowCountCell = document.getElementById(`field-diff-count-${tableName}`);
+    if (_rowCountCell) {
+      if (data.total === 0) {
+        const _row = _rowCountCell.closest('tr');
+        if (_row) _row.style.display = 'none';
+      } else {
+        _rowCountCell.textContent = fmtNum(data.total);
+        _rowCountCell.style.color = '#b71c1c';
+      }
+    }
+
+    if (!data.diff_records || data.diff_records.length === 0) {
+      document.getElementById('modal-alert').innerHTML =
+        `<div class="alert alert-success"><i class="bi bi-check-circle-fill me-1"></i>` +
+        `ไม่พบข้อมูลที่ต้อง Update — ฟิลทุกฟิลตรงกันในช่วง 3 เดือนนี้</div>`;
+      return;
+    }
+
+    renderFieldDiffTable(data.columns, data.diff_records, data.pks);
+    document.getElementById('modal-table-wrap').style.display  = '';
+    document.getElementById('modal-export-btn').style.display  = '';
+    document.getElementById('modal-update-btn').style.display  = '';
+    document.getElementById('modal-footer-info').textContent   =
+      `แสดง ${fmtNum(data.diff_records.length)} จากทั้งหมด ${fmtNum(data.total)} รายการ`;
+
+    if (data.total > data.diff_records.length) {
+      const noteEl = document.getElementById('modal-truncated-note');
+      noteEl.style.display = '';
+      noteEl.textContent   =
+        `* แสดงเฉพาะ ${fmtNum(data.diff_records.length)} รายการแรก จากทั้งหมด ${fmtNum(data.total)} รายการ`;
+    }
+
+  } catch (e) {
+    document.getElementById('modal-loading').style.display = 'none';
+    document.getElementById('modal-alert').innerHTML =
+      `<div class="alert alert-danger"><i class="bi bi-x-circle-fill me-1"></i>` +
+      `เกิดข้อผิดพลาด: ${escHtml(e.message)}</div>`;
+  }
+}
+
+async function updateChangedFromModal() {
+  if (!modalTableName) return;
+  const btn = document.getElementById('modal-update-btn');
+  const origHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>กำลัง Update...';
+  document.getElementById('modal-sync-result').innerHTML = '';
+
+  // รวบรวม PK ที่ติ๊กเลือก
+  const _checkedCbs = document.querySelectorAll('#modal-tbody .fdt-row-cb:checked');
+  if (_checkedCbs.length === 0) {
+    document.getElementById('modal-sync-result').innerHTML =
+      `<div class="alert alert-warning py-1 mb-0"><i class="bi bi-exclamation-triangle-fill me-1"></i>กรุณาเลือกอย่างน้อย 1 รายการ</div>`;
+    btn.disabled = false; btn.innerHTML = origHtml;
+    return;
+  }
+  const _selectedPks = Array.from(_checkedCbs).map(cb => JSON.parse(cb.dataset.pk));
+
+  try {
+    const res  = await fetch('/api/field-update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: modalTableName, selected_pks: _selectedPks })
+    });
+    const data = await res.json();
+
+    if (data.status === 'error') {
+      document.getElementById('modal-sync-result').innerHTML =
+        `<div class="alert alert-danger py-1 mb-0"><i class="bi bi-x-circle-fill me-1"></i>${escHtml(data.message)}</div>`;
+    } else {
+      document.getElementById('modal-sync-result').innerHTML =
+        `<div class="alert alert-success py-1 mb-0"><i class="bi bi-check-circle-fill me-1"></i>` +
+        `อัพเดทสำเร็จ <strong>${fmtNum(data.updated)}</strong> รายการ</div>`;
+      // อัพเดตจำนวนในแถวตาราง
+      const _cell = document.getElementById(`field-diff-count-${modalTableName}`);
+      if (_cell) { const _r = _cell.closest('tr'); if (_r) _r.style.display = 'none'; }
+      btn.style.display = 'none';
+    }
+  } catch (e) {
+    document.getElementById('modal-sync-result').innerHTML =
+      `<div class="alert alert-danger py-1 mb-0"><i class="bi bi-x-circle-fill me-1"></i>เกิดข้อผิดพลาด: ${escHtml(e.message)}</div>`;
+  } finally {
+    btn.disabled  = false;
+    btn.innerHTML = origHtml;
+  }
+}
+
+function renderFieldDiffTable(cols, diffRecords, pks) {
+  const pkSet = new Set((pks || []).map(p => p.toLowerCase()));
+
+  // เก็บไว้สำหรับ export
+  modalCurrentCols    = ['ฟิลที่ต่าง', ...cols];
+  modalCurrentRecords = diffRecords.map(d => {
+    const row = { 'ฟิลที่ต่าง': d.diff_fields.join(', ') };
+    cols.forEach(c => { row[c] = d.src[c] ?? d.src[c.toLowerCase()]; });
+    return row;
+  });
+
+  const thead = document.getElementById('modal-thead');
+  const tbody = document.getElementById('modal-tbody');
+
+  // Header
+  const hRow = document.createElement('tr');
+
+  // Checkbox header — Select All
+  const thChk = document.createElement('th');
+  thChk.style.cssText = 'background:#37474f;color:#fff;text-align:center;width:36px;';
+  const cbAll = document.createElement('input');
+  cbAll.type = 'checkbox'; cbAll.checked = true; cbAll.title = 'เลือก/ยกเลิกทั้งหมด';
+  cbAll.style.cssText = 'width:25px;height:25px;cursor:pointer;';
+  cbAll.addEventListener('change', () => {
+    tbody.querySelectorAll('.fdt-row-cb').forEach(cb => cb.checked = cbAll.checked);
+  });
+  thChk.appendChild(cbAll);
+  hRow.appendChild(thChk);
+
+  const thDiff = document.createElement('th');
+  thDiff.textContent = 'ฟิลที่ต่าง';
+  thDiff.style.cssText = 'white-space:nowrap;background:#b71c1c;color:#fff;';
+  hRow.appendChild(thDiff);
+  cols.forEach(c => {
+    const th = document.createElement('th');
+    th.textContent = c;
+    th.style.whiteSpace = 'nowrap';
+    if (pkSet.has(c.toLowerCase()))
+      th.style.cssText += 'background:#37474f;color:#fff;';
+    hRow.appendChild(th);
+  });
+  thead.innerHTML = '';
+  thead.appendChild(hRow);
+
+  // Rows
+  tbody.innerHTML = '';
+  diffRecords.forEach(d => {
+    const tr      = document.createElement('tr');
+    const diffSet = new Set(d.diff_fields.map(f => f.toLowerCase()));
+
+    // PK values (string-ified for safe round-trip via JSON)
+    const pkVals = pks.map(pk => {
+      const v = d.src[pk.toLowerCase()] ?? d.src[pk];
+      return v === null || v === undefined ? null : String(v);
+    });
+
+    // Checkbox cell
+    const tdChk = document.createElement('td');
+    tdChk.style.cssText = 'text-align:center;vertical-align:middle;';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.className = 'fdt-row-cb'; cb.checked = true;
+    cb.style.cssText = 'width:25px;height:25px;cursor:pointer;';
+    cb.dataset.pk = JSON.stringify(pkVals);
+    tdChk.appendChild(cb);
+    tr.appendChild(tdChk);
+
+    // cell "ฟิลที่ต่าง"
+    const tdDiff = document.createElement('td');
+    tdDiff.style.whiteSpace = 'nowrap';
+    tdDiff.innerHTML = d.diff_fields
+      .map(f => `<span class="badge" style="background:#dc3545;font-size:.7rem;">${escHtml(f)}</span>`)
+      .join(' ');
+    tr.appendChild(tdDiff);
+
+    cols.forEach(c => {
+      const td = document.createElement('td');
+      const v  = d.src[c] ?? d.src[c.toLowerCase()];
+      if (v === null || v === undefined) {
+        td.innerHTML = '<span class="text-null">NULL</span>';
+      } else {
+        td.textContent = String(v);
+      }
+      if (diffSet.has(c.toLowerCase())) {
+        td.style.cssText =
+          'background:#ffebee;color:#b71c1c;font-weight:bold;outline:2px solid #ef9a9a;';
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+// ─── Truncate prefix tables ───────────────────────────────────────────────────
+async function truncateAsmTables() {
+  if (!confirm(
+    '⚠️ จะล้างข้อมูลทุกตารางที่ขึ้นต้นด้วย asm_ ในฐานข้อมูลปลายทาง\n\n' +
+    'ข้อมูลทั้งหมดในตารางเหล่านั้นจะถูกลบออก!\n' +
+    'กด OK เพื่อยืนยัน'
+  )) return;
+
+  showSpinner();
+  try {
+    const res  = await fetch('/api/truncate-prefix-tables', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefix: 'asm_' })
+    });
+    const data = await res.json();
+    if (data.status === 'error') { alert('ผิดพลาด: ' + data.message); return; }
+    let msg = `✓ ${data.message}\n(${data.truncated} จาก ${data.total} ตาราง)`;
+    if (data.errors && data.errors.length) {
+      msg += '\n\nผิดพลาด:\n' + data.errors.slice(0,5).join('\n');
+    }
+    alert(msg);
+    // รีเฟรช M3
+    asmResults = [];
+    document.getElementById('asm-results').style.display = 'none';
+    document.getElementById('asm-summary').textContent = '';
+    document.getElementById('asm-tbody').innerHTML = '';
+  } catch (e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
+  finally { hideSpinner(); }
+}
+
+// ─── Menu 3: Assessment tables (asm_) ────────────────────────────────────────
+let asmResults = [];
+
+const _ASM_EXCL_IDS = ['chk-asm-missing-table','chk-asm-missing-col','chk-asm-data-diff','chk-asm-dst-more','chk-asm-need-update'];
+
+function _getFilteredAsmRows() {
+  const diffOnly   = document.getElementById('chk-asm-diff-only').checked;
+  const missTbl    = document.getElementById('chk-asm-missing-table').checked;
+  const missCol    = document.getElementById('chk-asm-missing-col').checked;
+  const dataDiff   = document.getElementById('chk-asm-data-diff').checked;
+  const dstMore    = document.getElementById('chk-asm-dst-more').checked;
+  const needUpdate = document.getElementById('chk-asm-need-update').checked;
+  if (diffOnly)   return asmResults.filter(r => r.status !== 'ok');
+  if (needUpdate) return asmResults.filter(r => r.status === 'diff' && r.diff > 0);
+  if (missTbl || missCol || dataDiff || dstMore) {
+    return asmResults.filter(r => {
+      if (missTbl  && r.status === 'missing')             return true;
+      if (missCol  && r.has_missing_cols)                 return true;
+      if (dataDiff && r.status === 'diff' && r.diff > 0)  return true;
+      if (dstMore  && r.status === 'diff' && r.diff < 0)  return true;
+      return false;
+    });
+  }
+  return asmResults;
+}
+
+function selectExclusiveAsmFilter(el) {
+  _ASM_EXCL_IDS.filter(id => id !== el.id).forEach(id => {
+    const cb   = document.getElementById(id);
+    const wrap = cb.closest('.asm-excl-wrap');
+    cb.checked           = false;
+    cb.disabled          = el.checked;
+    wrap.style.opacity       = el.checked ? '0.35' : '';
+    wrap.style.pointerEvents = el.checked ? 'none'  : '';
+  });
+  applyAsmFilter();
+}
+
+function applyAsmDiffFilter() { applyAsmFilter(); }
+function applyAsmFilter() {
+  renderPrefixRows(_getFilteredAsmRows(), 'asm-tbody', null,
+    document.getElementById('chk-asm-need-update').checked);
+  updateAsmBulkBtn();
+}
+
+function updateAsmBulkBtn() {
+  const diffOnly = document.getElementById('chk-asm-diff-only').checked;
+  const anySpec  = _ASM_EXCL_IDS.some(id => document.getElementById(id).checked);
+  document.getElementById('btn-asm-bulk-manage').disabled = !anySpec || diffOnly;
+}
+
+async function loadAsmTables() {
+  showSpinner();
+  try {
+    const res  = await fetch('/api/compare-by-prefix', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefix: 'asm_' })
+    });
+    const data = await res.json();
+    if (data.status === 'error') { alert(data.message); return; }
+
+    const results = data.results || [];
+    const okCnt   = results.filter(r => r.status === 'ok').length;
+    const diffCnt = results.filter(r => r.status === 'diff').length;
+    const misCnt  = results.filter(r => r.status === 'missing').length;
+
+    document.getElementById('asm-summary').textContent =
+      `ทั้งหมด ${results.length} ตาราง  |  เท่ากัน: ${okCnt}  |  ต่างกัน: ${diffCnt}  |  ไม่มีในปลายทาง: ${misCnt}`;
+
+    asmResults = results;
+    renderPrefixRows(_getFilteredAsmRows(), 'asm-tbody', null,
+      document.getElementById('chk-asm-need-update').checked);
+    updateAsmBulkBtn();
+    document.getElementById('asm-results').style.display = '';
+  } catch (e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
+  finally { hideSpinner(); }
+}
+
+function manageAsmBulkAll() {
+  _bulkResultsRef = asmResults;
+  _openBulkModal(
+    _getFilteredAsmRows(),
+    document.getElementById('chk-asm-missing-table').checked,
+    document.getElementById('chk-asm-missing-col').checked,
+    document.getElementById('chk-asm-data-diff').checked,
+    document.getElementById('chk-asm-need-update').checked
+  );
 }
 
 // ─── Modal: Table Detail ─────────────────────────────────────────────────────
@@ -1257,12 +2882,14 @@ async function openTableDetail(tableName) {
   document.getElementById('modal-sync-result').innerHTML    = '';
   document.getElementById('modal-footer-info').textContent  = '';
   document.getElementById('modal-loading').style.display    = '';
-  document.getElementById('modal-table-wrap').style.display = 'none';
-  document.getElementById('modal-sync-btn').style.display   = 'none';
+  document.getElementById('modal-table-wrap').style.display  = 'none';
+  document.getElementById('modal-sync-btn').style.display    = 'none';
+  document.getElementById('modal-update-btn').style.display  = 'none';
+  document.getElementById('modal-export-btn').style.display  = 'none';
   document.getElementById('modal-truncated-note').style.display = 'none';
   document.getElementById('modal-sync-btn').disabled = false;
 
-  const modal = new bootstrap.Modal(document.getElementById('tableDetailModal'));
+  const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('tableDetailModal'));
   modal.show();
 
   try {
@@ -1329,7 +2956,14 @@ async function openTableDetail(tableName) {
   }
 }
 
+let modalCurrentCols    = [];
+let modalCurrentRecords = [];
+
 function renderModalTable(cols, records) {
+  modalCurrentCols    = cols;
+  modalCurrentRecords = records;
+  document.getElementById('modal-export-btn').style.display = records.length ? '' : 'none';
+
   const thead = document.getElementById('modal-thead');
   const tbody = document.getElementById('modal-tbody');
 
@@ -1580,8 +3214,11 @@ async function openColumnDetail(tableName) {
   document.getElementById('col-modal-body').style.display    = 'none';
   document.getElementById('col-modal-alert').innerHTML       = '';
   document.getElementById('col-modal-add-result').innerHTML  = '';
-  document.getElementById('col-add-btn').style.display       = 'none';
   document.getElementById('col-modal-footer-info').textContent = '';
+  const _addBtn = document.getElementById('col-add-btn');
+  _addBtn.style.display = 'none';
+  _addBtn.disabled      = false;
+  _addBtn.innerHTML     = '<i class="bi bi-plus-circle-fill me-1"></i>เพิ่มฟิลที่เลือก';
 
   const modal = new bootstrap.Modal(document.getElementById('columnDetailModal'));
   modal.show();
@@ -1767,6 +3404,1004 @@ function fmtNum(n) {
   return Number(n).toLocaleString('th-TH');
 }
 
+// ─── Excel Export ─────────────────────────────────────────────────────────────
+function _statusLabel(r) {
+  if (r.status === 'ok')      return 'เท่ากัน';
+  if (r.status === 'missing') return 'ไม่มีตาราง';
+  return r.diff > 0 ? 'ต่างกัน (src มากกว่า)' : 'ปลายทางมากกว่า';
+}
+
+function _buildResultsSheet(results) {
+  const headers = ['#', 'ชื่อตาราง', 'Src Count', 'Dst Count', 'ขาด', 'สถานะ', 'ฟิลที่ขาด'];
+  const rows = results.map((r, i) => [
+    i + 1,
+    r.table,
+    r.source_count >= 0      ? r.source_count      : '',
+    r.destination_count >= 0 ? r.destination_count : 'ไม่มีตาราง',
+    r.status === 'missing'   ? '' : r.diff,
+    _statusLabel(r),
+    r.has_missing_cols ? r.missing_col_count : 0,
+  ]);
+  return XLSX.utils.aoa_to_sheet([headers, ...rows]);
+}
+
+function exportPrefixToXlsx() {
+  if (!prefixResults.length) return;
+  const data = _getFilteredPrefixRows();
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, _buildResultsSheet(data), 'ผลการตรวจสอบ');
+  const prefix = document.getElementById('prefix-label').textContent || 'all';
+  XLSX.writeFile(wb, `db_compare_${prefix.replace('...','')}_${_today()}.xlsx`);
+}
+
+function exportAsmToXlsx() {
+  if (!asmResults.length) return;
+  const diffOnly = document.getElementById('chk-asm-diff-only').checked;
+  const data = diffOnly ? asmResults.filter(r => r.status !== 'ok') : asmResults;
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, _buildResultsSheet(data), 'asm_tables');
+  XLSX.writeFile(wb, `db_compare_asm_${_today()}.xlsx`);
+}
+
+function exportModalToXlsx() {
+  if (!modalCurrentCols.length || !modalCurrentRecords.length) return;
+  const rows = modalCurrentRecords.map(r =>
+    modalCurrentCols.map(c => { const v = r[c]; return (v === null || v === undefined) ? '' : v; })
+  );
+  const ws = XLSX.utils.aoa_to_sheet([modalCurrentCols, ...rows]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, modalTableName || 'records');
+  XLSX.writeFile(wb, `missing_${modalTableName}_${_today()}.xlsx`);
+}
+
+function _today() {
+  const d = new Date();
+  return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ─── Menu 8: PPL Tables ──────────────────────────────────────────────────────
+const PPL_TABLES = [
+  'ipd_doctor_order','ipd_doctor_order_detail','ipd_doctor_order_exm_detail',
+  'ipd_doctor_order_med_detail','ipt_vital_chart_opt','ipd_nurse_note',
+  'ipd_nurse_note_vt','ipd_nurse_diagnosis','assessment_head','med_recon',
+  'med_recon_detail','med_recon_detail_acc','ipd_doctor_order_opr_detail',
+  'ipd_doctor_order_tpl_exm','ipd_doctor_order_tpl_med','ipd_do_nurse_plan',
+  'ipd_do_schedule_detail','nursing_focus','ipd_nurse_work_shift','ipt_discharge',
+  'doctor_cert','ipt_doctor_diag','ipt_discharge_summary_note',
+  'ipt_blood_glu_test_list','ipd_doctor_order_image',
+];
+
+let pplResults = [];
+const _PPL_EXCL_IDS = ['chk-ppl-missing-table','chk-ppl-missing-col','chk-ppl-data-diff','chk-ppl-dst-more'];
+
+function _getFilteredPplRows() {
+  const diffOnly = document.getElementById('chk-ppl-diff-only').checked;
+  const missTbl  = document.getElementById('chk-ppl-missing-table').checked;
+  const missCol  = document.getElementById('chk-ppl-missing-col').checked;
+  const dataDiff = document.getElementById('chk-ppl-data-diff').checked;
+  const dstMore  = document.getElementById('chk-ppl-dst-more').checked;
+  if (diffOnly) return pplResults.filter(r => r.status !== 'ok');
+  if (missTbl || missCol || dataDiff || dstMore) {
+    return pplResults.filter(r => {
+      if (missTbl  && r.status === 'missing')             return true;
+      if (missCol  && r.has_missing_cols)                 return true;
+      if (dataDiff && r.status === 'diff' && r.diff > 0)  return true;
+      if (dstMore  && r.status === 'diff' && r.diff < 0)  return true;
+      return false;
+    });
+  }
+  return pplResults;
+}
+
+function selectExclusivePplFilter(el) {
+  _PPL_EXCL_IDS.filter(id => id !== el.id).forEach(id => {
+    const cb = document.getElementById(id), wrap = cb.closest('.ppl-excl-wrap');
+    cb.checked = false; cb.disabled = el.checked;
+    wrap.style.opacity = el.checked ? '0.35' : '';
+    wrap.style.pointerEvents = el.checked ? 'none' : '';
+  });
+  applyPplFilter();
+}
+
+function applyPplFilter() {
+  renderPrefixRows(_getFilteredPplRows(), 'ppl-tbody');
+  updatePplBulkBtn();
+}
+
+function updatePplBulkBtn() {
+  const diffOnly = document.getElementById('chk-ppl-diff-only').checked;
+  const anySpec  = _PPL_EXCL_IDS.some(id => document.getElementById(id).checked);
+  document.getElementById('btn-ppl-bulk-manage').disabled = !anySpec || diffOnly;
+}
+
+async function loadPplTables() {
+  showSpinner();
+  try {
+    const res  = await fetch('/api/compare-tables-list', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tables: PPL_TABLES })
+    });
+    const data = await res.json();
+    if (data.status === 'error') { alert('เกิดข้อผิดพลาด: ' + data.message); return; }
+    const results = data.results || [];
+    const okCnt   = results.filter(r => r.status === 'ok').length;
+    const diffCnt = results.filter(r => r.status === 'diff').length;
+    const misCnt  = results.filter(r => r.status === 'missing').length;
+    document.getElementById('ppl-summary').textContent =
+      `ทั้งหมด ${results.length} ตาราง  |  เท่ากัน: ${okCnt}  |  ต่างกัน: ${diffCnt}  |  ไม่มีในปลายทาง: ${misCnt}`;
+    pplResults = results;
+    renderPrefixRows(_getFilteredPplRows(), 'ppl-tbody');
+    updatePplBulkBtn();
+    document.getElementById('ppl-results').style.display = '';
+  } catch (e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
+  finally { hideSpinner(); }
+}
+
+function managePplBulkAll() {
+  _bulkResultsRef = pplResults;
+  _openBulkModal(
+    _getFilteredPplRows(),
+    document.getElementById('chk-ppl-missing-table').checked,
+    document.getElementById('chk-ppl-missing-col').checked,
+    document.getElementById('chk-ppl-data-diff').checked
+  );
+}
+
+function exportPplToXlsx() {
+  if (!pplResults.length) return;
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, _buildResultsSheet(_getFilteredPplRows()), 'ppl_tables');
+  XLSX.writeFile(wb, `db_compare_ppl_${_today()}.xlsx`);
+}
+
+// ─── Menu 7: Image Tables ────────────────────────────────────────────────────
+let imageResults = [];
+const _IMG_EXCL_IDS = ['chk-img-missing-table','chk-img-missing-col','chk-img-data-diff','chk-img-dst-more','chk-img-need-update'];
+
+function _getFilteredImageRows() {
+  const diffOnly   = document.getElementById('chk-img-diff-only').checked;
+  const missTbl    = document.getElementById('chk-img-missing-table').checked;
+  const missCol    = document.getElementById('chk-img-missing-col').checked;
+  const dataDiff   = document.getElementById('chk-img-data-diff').checked;
+  const dstMore    = document.getElementById('chk-img-dst-more').checked;
+  const needUpdate = document.getElementById('chk-img-need-update').checked;
+  if (diffOnly)   return imageResults.filter(r => r.status !== 'ok');
+  if (needUpdate) return imageResults.filter(r => r.status === 'diff' && r.diff > 0);
+  if (missTbl || missCol || dataDiff || dstMore) {
+    return imageResults.filter(r => {
+      if (missTbl  && r.status === 'missing')             return true;
+      if (missCol  && r.has_missing_cols)                 return true;
+      if (dataDiff && r.status === 'diff' && r.diff > 0)  return true;
+      if (dstMore  && r.status === 'diff' && r.diff < 0)  return true;
+      return false;
+    });
+  }
+  return imageResults;
+}
+
+function selectExclusiveImageFilter(el) {
+  _IMG_EXCL_IDS.filter(id => id !== el.id).forEach(id => {
+    const cb   = document.getElementById(id);
+    const wrap = cb.closest('.img-excl-wrap');
+    cb.checked           = false;
+    cb.disabled          = el.checked;
+    wrap.style.opacity       = el.checked ? '0.35' : '';
+    wrap.style.pointerEvents = el.checked ? 'none'  : '';
+  });
+  applyImageFilter();
+}
+
+function applyImageFilter() {
+  renderPrefixRows(_getFilteredImageRows(), 'img-tbody', null,
+    document.getElementById('chk-img-need-update').checked);
+  updateImageBulkBtn();
+}
+
+function updateImageBulkBtn() {
+  const diffOnly = document.getElementById('chk-img-diff-only').checked;
+  const anySpec  = _IMG_EXCL_IDS.some(id => document.getElementById(id).checked);
+  document.getElementById('btn-img-bulk-manage').disabled = !anySpec || diffOnly;
+}
+
+async function loadImageTables() {
+  showSpinner();
+  try {
+    const res  = await fetch('/api/compare-contains', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pattern: 'image', extra_tables: ['opdscan'] })
+    });
+    const data = await res.json();
+    if (data.status === 'error') { alert('เกิดข้อผิดพลาด: ' + data.message); return; }
+
+    const results = data.results || [];
+    const okCnt   = results.filter(r => r.status === 'ok').length;
+    const diffCnt = results.filter(r => r.status === 'diff').length;
+    const misCnt  = results.filter(r => r.status === 'missing').length;
+
+    document.getElementById('img-summary').textContent =
+      `ทั้งหมด ${results.length} ตาราง  |  เท่ากัน: ${okCnt}  |  ต่างกัน: ${diffCnt}  |  ไม่มีในปลายทาง: ${misCnt}`;
+
+    imageResults = results;
+    renderPrefixRows(_getFilteredImageRows(), 'img-tbody', null,
+      document.getElementById('chk-img-need-update').checked);
+    updateImageBulkBtn();
+    document.getElementById('img-results').style.display = '';
+  } catch (e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
+  finally { hideSpinner(); }
+}
+
+function manageImageBulkAll() {
+  _bulkResultsRef = imageResults;
+  _openBulkModal(
+    _getFilteredImageRows(),
+    document.getElementById('chk-img-missing-table').checked,
+    document.getElementById('chk-img-missing-col').checked,
+    document.getElementById('chk-img-data-diff').checked,
+    document.getElementById('chk-img-need-update').checked
+  );
+}
+
+function exportImageToXlsx() {
+  if (!imageResults.length) return;
+  const data = _getFilteredImageRows();
+  const wb   = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, _buildResultsSheet(data), 'image_tables');
+  XLSX.writeFile(wb, `db_compare_image_${_today()}.xlsx`);
+}
+
+// ─── Menu 8: Log Tables (_log) ───────────────────────────────────────────────
+let logResults = [];
+const _LOG_EXCL_IDS = ['chk-log-missing-table','chk-log-missing-col','chk-log-data-diff','chk-log-dst-more','chk-log-need-update'];
+
+function _getFilteredLogRows() {
+  const diffOnly   = document.getElementById('chk-log-diff-only').checked;
+  const missTbl    = document.getElementById('chk-log-missing-table').checked;
+  const missCol    = document.getElementById('chk-log-missing-col').checked;
+  const dataDiff   = document.getElementById('chk-log-data-diff').checked;
+  const dstMore    = document.getElementById('chk-log-dst-more').checked;
+  const needUpdate = document.getElementById('chk-log-need-update').checked;
+  if (diffOnly)   return logResults.filter(r => r.status !== 'ok');
+  if (needUpdate) return logResults.filter(r => r.status === 'diff' && r.diff > 0);
+  if (missTbl || missCol || dataDiff || dstMore) {
+    return logResults.filter(r => {
+      if (missTbl  && r.status === 'missing')             return true;
+      if (missCol  && r.has_missing_cols)                 return true;
+      if (dataDiff && r.status === 'diff' && r.diff > 0)  return true;
+      if (dstMore  && r.status === 'diff' && r.diff < 0)  return true;
+      return false;
+    });
+  }
+  return logResults;
+}
+
+function selectExclusiveLogFilter(el) {
+  _LOG_EXCL_IDS.filter(id => id !== el.id).forEach(id => {
+    const cb   = document.getElementById(id);
+    const wrap = cb.closest('.log-excl-wrap');
+    cb.checked           = false;
+    cb.disabled          = el.checked;
+    wrap.style.opacity       = el.checked ? '0.35' : '';
+    wrap.style.pointerEvents = el.checked ? 'none'  : '';
+  });
+  applyLogFilter();
+}
+
+function applyLogFilter() {
+  renderPrefixRows(_getFilteredLogRows(), 'log-tbody', null,
+    document.getElementById('chk-log-need-update').checked);
+  updateLogBulkBtn();
+}
+
+function updateLogBulkBtn() {
+  const diffOnly = document.getElementById('chk-log-diff-only').checked;
+  const anySpec  = _LOG_EXCL_IDS.some(id => document.getElementById(id).checked);
+  document.getElementById('btn-log-bulk-manage').disabled = !anySpec || diffOnly;
+}
+
+async function loadLogTables() {
+  showSpinner();
+  try {
+    const res  = await fetch('/api/compare-contains', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pattern: 'log' })
+    });
+    const data = await res.json();
+    if (data.status === 'error') { alert('เกิดข้อผิดพลาด: ' + data.message); return; }
+
+    const results = data.results || [];
+    const okCnt   = results.filter(r => r.status === 'ok').length;
+    const diffCnt = results.filter(r => r.status === 'diff').length;
+    const misCnt  = results.filter(r => r.status === 'missing').length;
+
+    document.getElementById('log-summary').textContent =
+      `ทั้งหมด ${results.length} ตาราง  |  เท่ากัน: ${okCnt}  |  ต่างกัน: ${diffCnt}  |  ไม่มีในปลายทาง: ${misCnt}`;
+
+    logResults = results;
+    renderPrefixRows(_getFilteredLogRows(), 'log-tbody', null,
+      document.getElementById('chk-log-need-update').checked);
+    updateLogBulkBtn();
+    document.getElementById('log-results').style.display = '';
+  } catch (e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
+  finally { hideSpinner(); }
+}
+
+function manageLogBulkAll() {
+  _bulkResultsRef = logResults;
+  _openBulkModal(
+    _getFilteredLogRows(),
+    document.getElementById('chk-log-missing-table').checked,
+    document.getElementById('chk-log-missing-col').checked,
+    document.getElementById('chk-log-data-diff').checked,
+    document.getElementById('chk-log-need-update').checked
+  );
+}
+
+function exportLogToXlsx() {
+  if (!logResults.length) return;
+  const data = _getFilteredLogRows();
+  const wb   = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, _buildResultsSheet(data), 'log_tables');
+  XLSX.writeFile(wb, `db_compare_log_${_today()}.xlsx`);
+}
+
+// ─── Menu 7: Update Serial MySQL (destination) ───────────────────────────────
+let _seq7Inited = false;
+const _S7 = ['seq7-table-','seq7-src-serial-','seq7-dst-serial-','seq7-status-'];
+
+function initSeq7Table() {
+  if (_seq7Inited) return;
+  _seq7Inited = true;
+  const tbody = document.getElementById('seq7-tbody');
+  tbody.innerHTML = '';
+  SEQ_LIST.forEach((s, i) => {
+    const tr = document.createElement('tr');
+    tr.id = `seq7-row-${s.col}`;
+    tr.innerHTML = `
+      <td class="text-center">
+        <input class="form-check-input seq7-chk" type="checkbox" checked
+               data-col="${escHtml(s.col)}"
+               style="border:1px solid #666; width:1em; height:1em;">
+      </td>
+      <td class="text-center text-muted">${i + 1}</td>
+      <td><code style="font-size:.95rem;font-weight:600;">${escHtml(s.col)}</code></td>
+      <td style="font-size:.85rem;">${escHtml(s.desc)}</td>
+      <td id="seq7-table-${s.col}" style="font-size:1.05rem;font-weight:600;">—</td>
+      <td class="text-center" id="seq7-src-serial-${s.col}" style="font-size:1rem;">—</td>
+      <td class="text-center" id="seq7-dst-serial-${s.col}" style="font-size:1rem;">—</td>
+      <td class="text-center" id="seq7-status-${s.col}">—</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('seq7-select-all').checked = true;
+}
+
+function seq7SelectAll(checked) {
+  document.querySelectorAll('.seq7-chk').forEach(cb => cb.checked = checked);
+}
+
+function _s7Render(r) {
+  const tEl   = document.getElementById(`seq7-table-${r.col}`);
+  const srcEl = document.getElementById(`seq7-src-serial-${r.col}`);
+  const dstEl = document.getElementById(`seq7-dst-serial-${r.col}`);
+  const sEl   = document.getElementById(`seq7-status-${r.col}`);
+  const row   = document.getElementById(`seq7-row-${r.col}`);
+  if (r.status === 'ok') {
+    if (tEl)   tEl.innerHTML    = `<code style="font-size:1.05rem;font-weight:600;">${escHtml(r.table)}</code>`;
+    if (srcEl) srcEl.textContent = r.dst_serial != null ? fmtNum(r.dst_serial) : '—';
+    if (dstEl) dstEl.textContent = r.max_val    != null ? fmtNum(r.max_val)    : '—';
+    const badge = r.was_equal
+      ? '<span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>เท่ากัน</span>'
+      : r.serial_ahead
+        ? '<span class="badge" style="background:#e91e63;color:#fff;"><i class="bi bi-check-circle me-1"></i>ต่างกัน ใช้งานได้</span>'
+        : '<span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle-fill me-1"></i>ต่างกัน</span>';
+    const serialWarn = r.serial_exists === false
+      ? ' <span class="badge bg-danger ms-1">ยังไม่มีใน serial</span>' : '';
+    const insertBadge = r.serial_action === 'INSERT'
+      ? ' <span class="badge bg-danger ms-1">serial:INSERT</span>' : '';
+    if (sEl) sEl.innerHTML = badge + serialWarn + insertBadge;
+    if (row) row.style.background = r.was_equal ? '#f0fdf4' : r.serial_ahead ? '#fdf2f8' : '#fffbeb';
+  } else {
+    _S7.slice(0,3).forEach(p => { const el = document.getElementById(p + r.col); if (el) el.textContent = '—'; });
+    if (sEl) {
+      const sp = document.createElement('span');
+      sp.className = 'badge bg-danger';
+      sp.style.cursor = 'pointer';
+      sp.title = 'คลิกเพื่อดูรายละเอียด';
+      sp.textContent = '⚠ ผิดพลาด (คลิก)';
+      sp.addEventListener('click', () => alert('ผิดพลาด:\n' + (r.message || 'ไม่ทราบสาเหตุ')));
+      sEl.innerHTML = '';
+      sEl.appendChild(sp);
+    }
+    if (row) row.style.background = '#fef2f2';
+  }
+}
+
+async function checkMysqlSerials() {
+  const selectedCols = new Set([...document.querySelectorAll('.seq7-chk:checked')].map(cb => cb.dataset.col));
+  const items = SEQ_LIST.filter(s => selectedCols.has(s.col));
+  if (!items.length) { alert('กรุณาเลือก serial อย่างน้อย 1 รายการ'); return; }
+  items.forEach(s => {
+    const sEl = document.getElementById(`seq7-status-${s.col}`);
+    if (sEl) sEl.innerHTML = '<span class="spinner-border spinner-border-sm text-info"></span>';
+    ['seq7-table-','seq7-src-serial-','seq7-dst-serial-'].forEach(p => {
+      const el = document.getElementById(p + s.col); if (el) el.textContent = '...';
+    });
+  });
+  showSpinner();
+  try {
+    const res  = await fetch('/api/check-mysql-serials', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ items })
+    });
+    const data = await res.json();
+    if (data.status === 'error') { alert(data.message); return; }
+    (data.results||[]).forEach(_s7Render);
+    const eq   = (data.results||[]).filter(r => r.status==='ok' && r.was_equal).length;
+    const diff = (data.results||[]).filter(r => r.status==='ok' && !r.was_equal).length;
+    const err  = (data.results||[]).filter(r => r.status==='error').length;
+    alert(`ผลการตรวจสอบ\n✓ เท่ากัน: ${eq}\n⚠ ต่างกัน (ควรอัปเดต): ${diff}\n✗ ผิดพลาด: ${err}`);
+  } catch(e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
+  finally { hideSpinner(); }
+}
+
+async function runUpdateMysqlSerials() {
+  const selectedCols = new Set([...document.querySelectorAll('.seq7-chk:checked')].map(cb => cb.dataset.col));
+  const items = SEQ_LIST.filter(s => selectedCols.has(s.col));
+  if (!items.length) { alert('กรุณาเลือก serial อย่างน้อย 1 รายการ'); return; }
+  if (!confirm(`อัปเดต serial ${items.length} รายการในฐานข้อมูล MySQL ปลายทาง?`)) return;
+  // อัปเดต DOM ก่อน แล้ว await ให้ browser repaint
+  items.forEach(s => {
+    const sEl = document.getElementById(`seq7-status-${s.col}`);
+    if (sEl) sEl.innerHTML = '<span class="spinner-border spinner-border-sm text-primary"></span>';
+    ['seq7-table-','seq7-src-serial-','seq7-dst-serial-'].forEach(p => {
+      const el = document.getElementById(p + s.col); if (el) el.textContent = '...';
+    });
+  });
+  await new Promise(r => requestAnimationFrame(r));
+  showSpinner();
+  try {
+    const res  = await fetch('/api/update-mysql-serials', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ items })
+    });
+    const data = await res.json();
+    if (data.status === 'error') { alert(data.message); return; }
+    (data.results||[]).forEach(_s7Render);
+    const ok   = (data.results||[]).filter(r => r.status==='ok').length;
+    const err  = (data.results||[]).filter(r => r.status==='error').length;
+    const eq   = (data.results||[]).filter(r => r.status==='ok' && r.was_equal).length;
+    const diff = ok - eq;
+    alert(`อัปเดตเสร็จสิ้น\n✓ สำเร็จ: ${ok}  (เท่ากัน: ${eq}  ต่างกัน: ${diff})\n✗ ผิดพลาด: ${err}`);
+  } catch(e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
+  finally { hideSpinner(); }
+}
+
+// ─── ตารางที่ซ่อนจาก M1 และ M2 (ไม่อยู่ใน BASIC_TABLES) ────────────────────
+const HIDDEN_TABLES = [
+  'doctor_hospital_list','doctor_position','doctor_position_std',
+  'officer_module','officer_task',
+  'opd_kios_dep_menu','opd_kiosk_nhso_pttype','pttype_nhso_subinscl',
+  'reporttemplate','reporttemplate_parameter','reporttemplate_print',
+  'doctor_operation_tpl','pe_image_list','doctor_pe_template',
+  'cc_code','oapp_grant','user_var',
+  'ipt_oper_code_template','ipt_oper_code_template_dt',
+];
+
+// ─── Menu 6: Update Serial PostgreSQL ────────────────────────────────────────
+const SEQ_LIST = [
+  { col:'seq_id',                    desc:'เปิด visit',
+    queryCol:'seq_id',                    queryTable:'ovst_seq',
+    serialName:'seq_id',                  seqName:'hosxp_seqseq_id' },
+  { col:'ovst_seq_id',               desc:'เปิด visit',
+    queryCol:'seq_id',                    queryTable:'ovst_seq',
+    serialName:'ovst_seq_id',             seqName:'hosxp_seqovst_seq_id' },
+  { col:'patient_pttype_id',         desc:'สิทธิประจำตัว',
+    queryCol:'patient_pttype_id',         queryTable:'patient_pttype',
+    serialName:'patient_pttype_id',       seqName:'seqpatient_pttype_id' },
+  { col:'visit_pttype_charge_id',    desc:'ค่าใช้จ่ายที่ดีดอัตโนมัติตอนเปิด visit',
+    queryCol:'visit_pttype_charge_id',    queryTable:'visit_pttype_charge',
+    serialName:'visit_pttype_charge_id',  seqName:'hosxp_seqvisit_pttype_charge_id' },
+  { col:'patient_relation_address_id', desc:'ที่อยู่ผู้ติดต่อ',
+    queryCol:'patient_relation_address_id', queryTable:'patient_relation_address',
+    serialName:'patient_relation_address_id', seqName:'hosxp_seqpatient_relation_address_id' },
+  { col:'death_id',                  desc:'เลขที่เสียชีวิต',
+    queryCol:'death_id',                  queryTable:'death',
+    serialName:'death_id',                seqName:'hosxp_seqdeath_id' },
+  { col:'ptnote_id',                 desc:'โน๊ต',
+    queryCol:'ptnote_id',                 queryTable:'ptnote',
+    serialName:'ptnote_id',               seqName:'hosxp_seqptnote_id' },
+  { col:'ovst_diag_id',              desc:'diag',
+    queryCol:'ovst_diag_id',              queryTable:'ovstdiag',
+    serialName:'ovst_diag_id',            seqName:'hosxp_seqovst_diag_id' },
+  { col:'opdscreen_cc_list_id',      desc:'cc',
+    queryCol:'opdscreen_cc_list_id',      queryTable:'opdscreen_cc_list',
+    serialName:'opdscreen_cc_list_id',    seqName:'hosxp_seqopdscreen_cc_list_id' },
+  { col:'ovst_queue_check_id',       desc:'Q',
+    queryCol:'ovst_queue_check_id',       queryTable:'ovst_queue_check',
+    serialName:'ovst_queue_check_id',     seqName:'hosxp_seqovst_queue_check_id' },
+  { col:'opdscreen_advice_id',       desc:'คำแนะนำ',
+    queryCol:'opdscreen_advice_id',       queryTable:'opdscreen_advice',
+    serialName:'opdscreen_advice_id',     seqName:'hosxp_seqopdscreen_advice_id' },
+  { col:'referout_id',               desc:'referout',
+    queryCol:'referout_id',               queryTable:'referout',
+    serialName:'referout_id',             seqName:'hosxp_seqreferout_id' },
+  { col:'oapp_id',                   desc:'นัดหมาย',
+    queryCol:'oapp_id',                   queryTable:'oapp',
+    serialName:'oapp_id',                 seqName:'hosxp_seqoapp_id' },
+  { col:'xray_report_list_id',       desc:'ผล xray',
+    queryCol:'xray_report_list_id',       queryTable:'xray_report_list',
+    serialName:'xray_report_list_id',     seqName:'hosxp_seqxray_report_list_id' },
+  { col:'ipt_pttype_id',             desc:'สิทธิผู้ป่วยใน',
+    queryCol:'ipt_pttype_id',             queryTable:'ipt_pttype',
+    serialName:'ipt_pttype_id',           seqName:'hosxp_seqipt_pttype_id' },
+  { col:'ipt_diag_id',               desc:'โรคผู้ป่วยใน',
+    queryCol:'ipt_diag_id',               queryTable:'iptdiag',
+    serialName:'ipt_diag_id',             seqName:'hosxp_seqipt_diag_id' },
+  { col:'icd_doctor_codemap_id',     desc:'คำค้น diagtext',
+    queryCol:'icd_doctor_codemap_id',     queryTable:'icd_doctor_codemap',
+    serialName:'icd_doctor_codemap_id',   seqName:'hosxp_seqicd_doctor_codemap_id' },
+  { col:'dtmain_id',                 desc:'ทันตกรรม',
+    queryCol:'dtmain_id',                 queryTable:'dtmain',
+    serialName:'dtmain_id',               seqName:'hosxp_seqdtmain_id' },
+  { col:'officer_department_id',     desc:'ห้องทำงาน',
+    queryCol:'officer_department_id',     queryTable:'officer_department',
+    serialName:'officer_department_id',   seqName:'hosxp_seqofficer_department_id' },
+  { col:'ovst_doctor_sign_id',       desc:'แพทย์ตรวจ',
+    queryCol:'ovst_doctor_sign_id',       queryTable:'ovst_doctor_sign',
+    serialName:'ovst_doctor_sign_id',     seqName:'hosxp_seqovst_doctor_sign_id' },
+  { col:'officer_activity_log_id',   desc:'log',
+    queryCol:'officer_activity_log_id',   queryTable:'officer_activity_log',
+    serialName:'officer_activity_log_id', seqName:'hosxp_seqofficer_activity_log_id' },
+  { col:'lab_order_number',          desc:'order lab',
+    queryCol:'lab_order_number',          queryTable:'lab_head',
+    serialName:'lab_order_number',        seqName:'hosxp_seqlab_order_number' },
+  { col:'person_anc_id',            desc:'บัญชี2',
+    queryCol:'person_anc_id',            queryTable:'person_anc_service',
+    serialName:'person_anc_id',          seqName:'hosxp_seqperson_anc_id' },
+  { col:'person_anc_service_id',    desc:'รายละเอียดบัญชี2',
+    queryCol:'person_anc_service_id',    queryTable:'person_anc_service',
+    serialName:'person_anc_service_id',  seqName:'hosxp_seqperson_anc_service_id' },
+  { col:'ipt_doctor_list_id',        desc:'แพทย์ผู้ป่วยใน',
+    queryCol:'ipt_doctor_list_id',        queryTable:'ipt_doctor_list',
+    serialName:'ipt_doctor_list_id',      seqName:'hosxp_seqipt_doctor_list_id' },
+  { col:'debt_id',                   desc:'ใบแจ้งหนี้',
+    queryCol:'debt_id',                   queryTable:'rcpt_debt',
+    serialName:'debt_id',                 seqName:'hosxp_seqdebt_id' },
+  { col:'patient_arrear_id',         desc:'ค้างชำระ',
+    queryCol:'patient_arrear_id',         queryTable:'patient_arrear',
+    serialName:'patient_arrear_id',       seqName:'hosxp_seqpatient_arrear_id' },
+  { col:'patient_arrear_detail_id',  desc:'รายละเอียดค้างชำระ',
+    queryCol:'patient_arrear_detail_id',  queryTable:'patient_arrear_detail',
+    serialName:'patient_arrear_detail_id', seqName:'hosxp_seqpatient_arrear_detail_id' },
+  { col:'opi_dispense_id',           desc:'วิธีใช้ยา mode3',
+    queryCol:'opi_dispense_id',           queryTable:'opi_dispense',
+    serialName:'opi_dispense_id',         seqName:'hosxp_seqopi_dispense_id' },
+  { col:'clinicmember_id',           desc:'ทะเบียนโรคเรื้อรัง',
+    queryCol:'clinicmember_id',           queryTable:'clinicmember',
+    serialName:'clinicmember_id',         seqName:'hosxp_seqclinicmember_id' },
+  { col:'order_no',                  desc:'ใบสั่งยาผู้ป่วยใน',
+    queryCol:'order_no',                  queryTable:'ipt_order_no',
+    serialName:'order_no',                seqName:'hosxp_seqorder_no' },
+  { col:'ipt_order_id',              desc:'ใบสั่งยาผู้ป่วยใน',
+    queryCol:'ipt_order_id',              queryTable:'ipt_order_no',
+    serialName:'ipt_order_id',            seqName:'hosxp_seqipt_order_id' },
+  { col:'med_rx_number',             desc:'ใบสั่งยาผู้ป่วยใน',
+    queryCol:'order_no',                  queryTable:'ipt_order_no',
+    serialName:'med_rx_number',           seqName:'hosxp_seqmed_rx_number' },
+  { col:'med_plan_number',           desc:'profile ยาผู้ป่วยใน',
+    queryCol:'med_plan_number',           queryTable:'medplan_ipd',
+    serialName:'med_plan_number',         seqName:'hosxp_seqmed_plan_number' },
+  { col:'xray_order_number',         desc:'ใบสั่ง xray',
+    queryCol:'xray_order_number',         queryTable:'xray_head',
+    serialName:'xray_order_number',       seqName:'hosxp_seqxray_order_number' },
+  { col:'person_epi_id',             desc:'บัญชี 3',
+    queryCol:'person_epi_id',             queryTable:'person_epi',
+    serialName:'person_epi_id',           seqName:'hosxp_seqperson_epi_id' },
+  { col:'rent_id',                   desc:'ยืมแฟ้ม opd',
+    queryCol:'rent_id',                   queryTable:'opdrent',
+    serialName:'rent_id',                 seqName:'hosxp_seqrent_id' },
+  { col:'reporttemplate_parameter_id', desc:'แบบฟอร์ม',
+    queryCol:'reporttemplate_parameter_id', queryTable:'reporttemplate_parameter',
+    serialName:'reporttemplate_parameter_id', seqName:'hosxp_seqreporttemplate_parameter_id' },
+  { col:'finance_number',            desc:'ใบเสร็จ',
+    queryExpr:'"finance_number"::integer', queryTable:'rcpt_print',
+    serialName:'finance_number',           seqName:'hosxp_seqfinance_number' },
+  { col:'lab_order_service_id',      desc:'ใบสั่ง lab',
+    queryCol:'lab_order_service_id',      queryTable:'lab_order_service',
+    serialName:'lab_order_service_id',    seqName:'hosxp_seqlab_order_service_id' },
+  { col:'xray_report_list_id',       desc:'ผล xray',
+    queryCol:'xray_report_list_id',       queryTable:'xray_report_list',
+    serialName:'xray_report_list_id',     seqName:'hosxp_seqxray_report_list_id' },
+  { col:'XN',                        desc:'XN',
+    queryCol:'xn',                        queryTable:'xray_report',
+    serialName:'XN',                      seqName:'hosxp_seqxn' },
+  { col:'debt_cancel_id',            desc:'ยกเลิกใบแจ้งหนี้',
+    queryCol:'debt_cancel_id',            queryTable:'rcpt_debt_cancel',
+    serialName:'debt_cancel_id',          seqName:'hosxp_seqdebt_cancel_id' },
+  { col:'lab_lis_track_id',          desc:'lab',
+    queryCol:'lab_lis_track_id',          queryTable:'lab_lis_track',
+    serialName:'lab_lis_track_id',        seqName:'hosxp_seqlab_lis_track_id' },
+];
+SEQ_LIST.sort((a, b) => a.col.localeCompare(b.col));
+SEQ_LIST.push({
+  col: '_fix_serial_1',
+  desc: 'ปรับ serial ที่ค่าเป็น 1 → 2 ไม่ต้องเช็คอะไร',
+  fixOp: 'fix_serial_min'
+});
+
+let _seqInited = false;
+
+function resetSeqTable() { _seqInited = false; }
+
+function initSeqTable() {
+  if (_seqInited) return;
+  _seqInited = true;
+  const tbody = document.getElementById('seq-tbody');
+  tbody.innerHTML = '';
+  SEQ_LIST.forEach((s, i) => {
+    const tr = document.createElement('tr');
+    tr.id = `seq-row-${s.col}`;
+    tr.innerHTML = `
+      <td class="text-center">
+        <input class="form-check-input seq-chk" type="checkbox" checked
+               data-col="${escHtml(s.col)}"
+               style="border:1px solid #666; width:1em; height:1em;">
+      </td>
+      <td class="text-center text-muted">${i + 1}</td>
+      <td><code style="font-size:.95rem;font-weight:600;">${escHtml(s.col)}</code></td>
+      <td style="font-size:.85rem;">${escHtml(s.desc)}</td>
+      <td id="seq-table-${s.col}" style="font-size:1.05rem;font-weight:600;">—</td>
+      <td class="text-center" id="seq-src-serial-${s.col}" style="font-size:1rem;">—</td>
+      <td class="text-center" id="seq-dst-serial-${s.col}" style="font-size:1rem;">—</td>
+      <td id="seq-seqname-${s.col}" style="font-size:.9rem;">—</td>
+      <td class="text-center" id="seq-status-${s.col}">—</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('seq-select-all').checked = true;
+}
+
+function seqSelectAll(checked) {
+  document.querySelectorAll('.seq-chk').forEach(cb => cb.checked = checked);
+}
+
+async function checkSequences() {
+  const selectedCols = new Set([...document.querySelectorAll('.seq-chk:checked')].map(cb => cb.dataset.col));
+  const items = SEQ_LIST.filter(s => selectedCols.has(s.col));
+  if (!items.length) { alert('กรุณาเลือก sequence อย่างน้อย 1 รายการ'); return; }
+
+  const _seqCols = ['seq-table-','seq-src-serial-','seq-dst-serial-','seq-seqname-'];
+  items.forEach(s => {
+    const sEl = document.getElementById(`seq-status-${s.col}`);
+    if (sEl) sEl.innerHTML = '<span class="spinner-border spinner-border-sm text-info"></span>';
+    _seqCols.forEach(p => { const el = document.getElementById(p + s.col); if (el) el.textContent = '...'; });
+  });
+
+  showSpinner();
+  try {
+    const res  = await fetch('/api/check-sequences', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items })
+    });
+    const data = await res.json();
+    if (data.status === 'error') { alert(data.message); return; }
+
+    (data.results || []).forEach(r => {
+      const tEl   = document.getElementById(`seq-table-${r.col}`);
+      const srcEl = document.getElementById(`seq-src-serial-${r.col}`);
+      const dstEl = document.getElementById(`seq-dst-serial-${r.col}`);
+      const snEl  = document.getElementById(`seq-seqname-${r.col}`);
+      const sEl   = document.getElementById(`seq-status-${r.col}`);
+      const row   = document.getElementById(`seq-row-${r.col}`);
+
+      if (r.status === 'ok') {
+        if (tEl)   tEl.innerHTML    = `<code style="font-size:1.05rem;font-weight:600;">${escHtml(r.table)}</code>`;
+        if (srcEl) srcEl.textContent = r.dst_serial != null ? fmtNum(r.dst_serial) : '—';
+        if (dstEl) dstEl.textContent = r.max_val    != null ? fmtNum(r.max_val)    : '—';
+        if (snEl)  snEl.innerHTML   = `<code style="font-size:.85rem;">${escHtml(r.seq_name)}</code>
+                                       <span class="badge ${r.seq_exists?'bg-info text-dark':'bg-secondary'} ms-1">${r.seq_exists?'มีอยู่':'ยังไม่มี'}</span>`;
+        const serialWarn = r.serial_exists === false
+          ? ' <span class="badge bg-danger ms-1">ยังไม่มีใน serial</span>' : '';
+        const badge = r.was_equal
+          ? `<span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>เท่ากัน</span>${serialWarn}`
+          : r.serial_ahead
+            ? `<span class="badge" style="background:#e91e63;color:#fff;"><i class="bi bi-check-circle me-1"></i>ต่างกัน ใช้งานได้</span>${serialWarn}`
+            : `<span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle-fill me-1"></i>ต่างกัน</span>${serialWarn}`;
+        if (sEl) sEl.innerHTML = badge;
+        if (row) row.style.background = r.was_equal ? '#f0fdf4' : r.serial_ahead ? '#fdf2f8' : '#fffbeb';
+      } else {
+        _seqCols.forEach(p => { const el = document.getElementById(p + r.col); if (el) el.textContent = '—'; });
+        if (sEl) { const sp = document.createElement('span'); sp.className='badge bg-danger'; sp.style.cursor='pointer'; sp.title='คลิกเพื่อดูรายละเอียด'; sp.textContent='⚠ ผิดพลาด (คลิก)'; sp.addEventListener('click', () => alert('ผิดพลาด:\n' + (r.message||'ไม่ทราบสาเหตุ'))); sEl.innerHTML=''; sEl.appendChild(sp); }
+        if (row) row.style.background = '#fef2f2';
+      }
+    });
+
+    const eq   = (data.results||[]).filter(r => r.status === 'ok' && r.was_equal).length;
+    const diff = (data.results||[]).filter(r => r.status === 'ok' && !r.was_equal).length;
+    const err  = (data.results||[]).filter(r => r.status === 'error').length;
+    alert(`ผลการตรวจสอบ\n✓ เท่ากัน: ${eq}\n⚠ ต่างกัน (ควรอัปเดต): ${diff}\n✗ ผิดพลาด: ${err}`);
+  } catch (e) {
+    alert('เกิดข้อผิดพลาด: ' + e.message);
+  } finally { hideSpinner(); }
+}
+
+async function runUpdateSequences() {
+  const selectedCols = new Set([...document.querySelectorAll('.seq-chk:checked')].map(cb => cb.dataset.col));
+  const items = SEQ_LIST.filter(s => selectedCols.has(s.col));
+  if (!items.length) { alert('กรุณาเลือก sequence อย่างน้อย 1 รายการ'); return; }
+  if (!confirm(`อัปเดต ${items.length} sequence ในฐานข้อมูลปลายทาง?`)) return;
+
+  const _updCols = ['seq-table-','seq-src-serial-','seq-dst-serial-','seq-seqname-'];
+  items.forEach(s => {
+    const sEl = document.getElementById(`seq-status-${s.col}`);
+    if (sEl) sEl.innerHTML = '<span class="spinner-border spinner-border-sm text-primary"></span>';
+    _updCols.forEach(p => { const el = document.getElementById(p + s.col); if (el) el.textContent = '...'; });
+  });
+
+  showSpinner();
+  try {
+    const res  = await fetch('/api/update-sequences', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items })
+    });
+    const data = await res.json();
+    if (data.status === 'error') { alert(data.message); return; }
+
+    (data.results || []).forEach(r => {
+      const tEl   = document.getElementById(`seq-table-${r.col}`);
+      const srcEl = document.getElementById(`seq-src-serial-${r.col}`);
+      const dstEl = document.getElementById(`seq-dst-serial-${r.col}`);
+      const snEl  = document.getElementById(`seq-seqname-${r.col}`);
+      const sEl   = document.getElementById(`seq-status-${r.col}`);
+      const row   = document.getElementById(`seq-row-${r.col}`);
+
+      if (r.status === 'ok') {
+        if (tEl)   tEl.innerHTML    = `<code style="font-size:1.05rem;font-weight:600;">${escHtml(r.table)}</code>`;
+        if (srcEl) srcEl.textContent = r.dst_serial != null ? fmtNum(r.dst_serial) : '—';
+        if (dstEl) dstEl.textContent = r.max_val    != null ? fmtNum(r.max_val)    : '—';
+        const serialBadge = r.serial_action === 'INSERT'
+          ? '<span class="badge bg-danger ms-1" title="เพิ่ม name ใหม่ในตาราง serial">serial:INSERT</span>'
+          : '<span class="badge bg-secondary ms-1">serial:UPDATE</span>';
+        if (snEl)  snEl.innerHTML   = `<code style="font-size:.85rem;">${escHtml(r.seq_name)}</code>
+                                       <span class="badge ${r.seq_action==='CREATE'?'bg-warning text-dark':'bg-info text-dark'} ms-1">${r.seq_action}</span>
+                                       ${serialBadge}`;
+        const statusBadge = r.was_equal
+          ? '<span class="badge bg-success">เท่ากัน</span>'
+          : '<span class="badge bg-warning text-dark">ต่างกัน → อัปเดตแล้ว</span>';
+        if (sEl) sEl.innerHTML = statusBadge;
+        if (row) row.style.background = r.was_equal ? '#f0fdf4' : '#fffbeb';
+      } else {
+        _updCols.forEach(p => { const el = document.getElementById(p + r.col); if (el) el.textContent = '—'; });
+        if (sEl) { const sp = document.createElement('span'); sp.className='badge bg-danger'; sp.style.cursor='pointer'; sp.title='คลิกเพื่อดูรายละเอียด'; sp.textContent='⚠ ผิดพลาด (คลิก)'; sp.addEventListener('click', () => alert('ผิดพลาด:\n' + (r.message||'ไม่ทราบสาเหตุ'))); sEl.innerHTML=''; sEl.appendChild(sp); }
+        if (row) row.style.background = '#fef2f2';
+      }
+    });
+
+    const ok  = (data.results||[]).filter(r => r.status === 'ok').length;
+    const err = (data.results||[]).filter(r => r.status === 'error').length;
+    const eq  = (data.results||[]).filter(r => r.status === 'ok' && r.was_equal).length;
+    const diff= ok - eq;
+    alert(`อัปเดตเสร็จสิ้น\n✓ สำเร็จ: ${ok}  (เท่ากัน: ${eq}  ต่างกัน: ${diff})\n✗ ผิดพลาด: ${err}`);
+  } catch (e) {
+    alert('เกิดข้อผิดพลาด: ' + e.message);
+  } finally { hideSpinner(); }
+}
+
+// ─── Menu 5: Basic Data Tables ───────────────────────────────────────────────
+const BASIC_TABLES = [
+  'hospital_department','spclty','clinic','kskdepartment','ward',
+  'roomno','roomtype','bedno','pttype_price_policy_type','pttype',
+  'pttype_service_charge','pttype_items_price','doctor','doctor_position_list','provider_type',
+  'officer_group','officer_group_module_access','officer_group_task_access',
+  'officer','opduser','officer_group_list','officer_hospital_department','officer_department',
+  'income','nondrugitems','drugitems','drugusage','opi_usage_code',
+  'opi_frequency_code','opi_usage_unit_code','opi_time_code','opi_dispense',
+  'medication_template','medication_template_detail','drug_interaction',
+  'drug_lab_interaction_list','drugitems_tmt_tpu_list','ipt_oper_code',
+  'health_med_items','operation_items','er_oper_code','physic_items',
+  'dttm','operation_anes_oper','pp_special_code','pp_special_type',
+  'baby_development_list','icd_doctor_codemap',
+  'xray_film','xray_contrast_media','xray_form_head','xray_room','xray_items_group',
+  'xray_priority','xray_typre','xray_damage','xray_items_charge','xray_side',
+  'ckup_service','ckup_room_service','ckup_prog',
+  'lab_items_sub_group','lab_form_head','lab_stuff','lab_abort_type','lab_items_doctor',
+  'blb_blood_items','blb_bag_type','blb_blood_grouping_type','blb_blood_origin_type',
+  'blb_donation_center','blb_donation_association','blb_trans_abo','blb_trans_rh',
+  'blb_request_reject_reason','blb_request_type','blb_request_emargency','blb_reaction_symptom',
+];
+
+const BASIC_TABLE_DESCS = {
+  'hospital_department':'ข้อมูลสาขา','spclty':'ข้อมูลแผนก','clinic':'ข้อมูลคลินิก',
+  'kskdepartment':'ข้อมูลห้องตรวจ หรือจุดบริการ','ward':'ข้อมูล ตึก','roomno':'ข้อมูล ห้อง',
+  'roomtype':'ข้อมูลประเภทห้อง','bedno':'ข้อมูล เตียง',
+  'pttype_price_policy_type':'ข้อมูลผังค่าบริการ','pttype':'ข้อมูลสิทธิ์รักษา',
+  'pttype_service_charge':'ข้อมูลค่าธรรมเนียมสิทธิ์รักษา',
+  'pttype_items_price':'ข้อมูลราคาสิทธิ์รักษา','doctor':'ข้อมูลบุคลากร',
+  'doctor_position_list':'ข้อมูลตำแหน่งแพทย์','provider_type':'ข้อมูลประเภท Provider',
+  'officer_group':'กลุ่มการใช้งาน','officer_group_module_access':'กลุ่มสิทธิการเข้าใช้งานระบบ',
+  'officer_group_task_access':'สิทธิการเข้าใช้งานระบบ','officer':'Login ผู้ใช้งาระบบ',
+  'opduser':'Login ผู้ใช้งาระบบ','officer_group_list':'กำหนดสิทธิให้กับ User',
+  'officer_hospital_department':'กำหนดสาขาให้กับผู้ใช้งาน',
+  'officer_department':'กำหนดห้องตรวจให้กับผู้ใช้งาน',
+  'income':'ข้อมูลหมวดค่ารักษาพยาบาล','nondrugitems':'ค่าบริการค่าใช้จ่าย',
+  'drugitems':'ค่ายาในบัญชียาหลักแห่งชาติ','drugusage':'ข้อมูลวิธีใช้ยา Mode2',
+  'opi_usage_code':'ข้อมูลวิธีใช้ยา Mode3','opi_frequency_code':'ข้อมูลความถี่ Mode3',
+  'opi_usage_unit_code':'ข้อมูลunit Mode3','opi_time_code':'ข้อมูลเวลา Mode3',
+  'opi_dispense':'ข้อมูลการจ่ายยา Mode3',
+  'medication_template':'ข้อมูล Template ยา','medication_template_detail':'ข้อมูลรายละเอียด Template ยา',
+  'drug_interaction':'ข้อมูล Drug Interaction','drug_lab_interaction_list':'ข้อมูล DrugLabInteraction',
+  'drugitems_tmt_tpu_list':'ข้อมูลรายการ TMT Code','ipt_oper_code':'ข้อมูลหัตถการผู้ป่วยใน',
+  'health_med_items':'ข้อมูลหัตถการแพทย์แผนไทย','operation_items':'ข้อมูลหัตถการผ่าตัด',
+  'er_oper_code':'ข้อมูลหัตถการผู้ป่วยนอก/ER','physic_items':'ข้อมูลหัตถการกายภาพบำบัด',
+  'dttm':'ข้อมูลหัตถการทันตกรรม','operation_anes_oper':'หัตถการวิสัญญี',
+  'pp_special_code':'ข้อมูลส่งเสริมป้องกันเฉพาะโรค PP_Special',
+  'pp_special_type':'ข้อมูลส่งเสริมป้องกันเฉพาะโรค PP_Special',
+  'baby_development_list':'ข้อมูลพัฒนาการเด็ก PSDM/TEDA ตาราง',
+  'icd_doctor_codemap':'คำค้น diagtext',
+  'xray_film':'ข้อมูล Film Xray / ขนาดฟิล์ม','xray_contrast_media':'ข้อมูล Contrast Media',
+  'xray_form_head':'แบบฟอร์มสั่ง X-Ray','xray_room':'ห้อง X-Ray',
+  'xray_items_group':'กลุ่มรายการ X-Ray','xray_priority':'ความเร่งด่วน',
+  'xray_typre':'ท่าการ X-Ray','xray_damage':'ประเภทฟิล์มเสีย',
+  'xray_items_charge':'ค่าธรรมเนียมการ X-Ray','xray_side':'ด้านการ X-Ray',
+  'ckup_service':'ข้อมูลค่าบริการตรวจสุขภาพ','ckup_room_service':'ข้อมูลห้องตรวจและค่าบริการตรวจสุขภาพ',
+  'ckup_prog':'ข้อมูลรายการตรวจสุขภาพ (package)',
+  'lab_items_sub_group':'ข้อมูลรายการ LAB Profile','lab_form_head':'ข้อมูลแบบฟอร์มใบ LAB',
+  'lab_stuff':'ข้อมูลเจ้าหน้าที่ห้องปฏิบัติการ','lab_abort_type':'ข้อมูลเหตุผลการยกเลิกสั่ง LAB / ขอโลหิต',
+  'lab_items_doctor':'ข้อมูลรายการ LAB ปกปิด',
+  'blb_blood_items':'ชนิดโลหิต','blb_bag_type':'ชนิดถุงโลหิต',
+  'blb_blood_grouping_type':'กรุ๊ปโลหิต','blb_blood_origin_type':'ที่บริจาค',
+  'blb_donation_center':'ศูนย์บริจาคโลหิต','blb_donation_association':'ที่มาโลหิต',
+  'blb_trans_abo':'แปลผล ABO','blb_trans_rh':'แปลผล Rh',
+  'blb_request_reject_reason':'ข้อมูลปฏิเสธส่งส่งตรวจห้องปฏิบัติการ/ปฏิเสธขอโลหิต',
+  'blb_request_type':'เหตุผลการขอโลหิต','blb_request_emargency':'ความเร่งด่วนของการขอโลหิตด่วน',
+  'blb_reaction_symptom':'ข้อมูลอาการแพ้โลหิต',
+};
+
+let basicResults = [];
+const _BASIC_EXCL_IDS = ['chk-basic-missing-table','chk-basic-missing-col','chk-basic-data-diff','chk-basic-dst-more'];
+
+function _getFilteredBasicRows() {
+  const diffOnly = document.getElementById('chk-basic-diff-only').checked;
+  const missTbl  = document.getElementById('chk-basic-missing-table').checked;
+  const missCol  = document.getElementById('chk-basic-missing-col').checked;
+  const dataDiff = document.getElementById('chk-basic-data-diff').checked;
+  const dstMore  = document.getElementById('chk-basic-dst-more').checked;
+  if (diffOnly) return basicResults.filter(r => r.status !== 'ok');
+  if (missTbl || missCol || dataDiff || dstMore) {
+    return basicResults.filter(r => {
+      if (missTbl  && r.status === 'missing')             return true;
+      if (missCol  && r.has_missing_cols)                 return true;
+      if (dataDiff && r.status === 'diff' && r.diff > 0)  return true;
+      if (dstMore  && r.status === 'diff' && r.diff < 0)  return true;
+      return false;
+    });
+  }
+  return basicResults;
+}
+
+function selectExclusiveBasicFilter(el) {
+  _BASIC_EXCL_IDS.filter(id => id !== el.id).forEach(id => {
+    const cb   = document.getElementById(id);
+    const wrap = cb.closest('.basic-excl-wrap');
+    cb.checked           = false;
+    cb.disabled          = el.checked;
+    wrap.style.opacity       = el.checked ? '0.35' : '';
+    wrap.style.pointerEvents = el.checked ? 'none'  : '';
+  });
+  applyBasicFilter();
+}
+
+function applyBasicFilter() {
+  renderPrefixRows(_getFilteredBasicRows(), 'basic-tbody', BASIC_TABLE_DESCS);
+  updateBasicBulkBtn();
+}
+
+function updateBasicBulkBtn() {
+  const diffOnly = document.getElementById('chk-basic-diff-only').checked;
+  const anySpec  = _BASIC_EXCL_IDS.some(id => document.getElementById(id).checked);
+  document.getElementById('btn-basic-bulk-manage').disabled = !anySpec || diffOnly;
+}
+
+async function loadBasicTables() {
+  showSpinner();
+  try {
+    const res  = await fetch('/api/compare-tables-list', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tables: BASIC_TABLES })
+    });
+    const data = await res.json();
+    if (data.status === 'error') { alert('เกิดข้อผิดพลาด: ' + data.message); return; }
+
+    const results = data.results || [];
+    const okCnt   = results.filter(r => r.status === 'ok').length;
+    const diffCnt = results.filter(r => r.status === 'diff').length;
+    const misCnt  = results.filter(r => r.status === 'missing').length;
+
+    document.getElementById('basic-summary').textContent =
+      `ทั้งหมด ${results.length} ตาราง  |  เท่ากัน: ${okCnt}  |  ต่างกัน: ${diffCnt}  |  ไม่มีในปลายทาง: ${misCnt}`;
+
+    basicResults = results;
+    renderPrefixRows(_getFilteredBasicRows(), 'basic-tbody', BASIC_TABLE_DESCS);
+    updateBasicBulkBtn();
+    document.getElementById('basic-results').style.display = '';
+  } catch (e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
+  finally { hideSpinner(); }
+}
+
+function manageBasicBulkAll() {
+  _bulkResultsRef = basicResults;
+  _openBulkModal(
+    _getFilteredBasicRows(),
+    document.getElementById('chk-basic-missing-table').checked,
+    document.getElementById('chk-basic-missing-col').checked,
+    document.getElementById('chk-basic-data-diff').checked
+  );
+}
+
+function exportBasicToXlsx() {
+  if (!basicResults.length) return;
+  const data = _getFilteredBasicRows();
+  const wb   = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, _buildResultsSheet(data), 'basic_tables');
+  XLSX.writeFile(wb, `db_compare_basic_${_today()}.xlsx`);
+}
+
+// ─── Menu 4: Tables without Primary Key ──────────────────────────────────────
+let noPkResults = [];
+
+async function loadNoPkTables() {
+  showSpinner();
+  try {
+    const res  = await fetch('/api/tables-no-pk');
+    const data = await res.json();
+    if (data.status === 'error') { alert('เกิดข้อผิดพลาด: ' + data.message); return; }
+
+    noPkResults = (data.tables || []).filter(r => !r.table.toLowerCase().includes('_log'));
+    const total   = data.total_checked || 0;
+    const noPkCnt = data.total_no_pk   || 0;
+
+    document.getElementById('nopk-summary').textContent =
+      `ตรวจสอบ ${fmtNum(total)} ตาราง  |  ไม่มี Primary Key: ${fmtNum(noPkCnt)} ตาราง`;
+
+    const tbody = document.getElementById('nopk-tbody');
+    tbody.innerHTML = '';
+    noPkResults.forEach((r, i) => {
+      const tr  = document.createElement('tr');
+      const cnt = r.record_count >= 0 ? fmtNum(r.record_count) : '-';
+      tr.innerHTML = `
+        <td class="text-center text-muted">${i + 1}</td>
+        <td style="font-family:'Courier New',monospace;font-size:.9rem;">${escHtml(r.table)}</td>
+        <td class="text-end fw-semibold">${cnt}</td>
+        <td class="text-center">
+          <span class="badge bg-warning text-dark">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>ไม่มี PK
+          </span>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('nopk-results').style.display = noPkResults.length ? '' : 'none';
+    if (noPkResults.length === 0) {
+      alert(`ตรวจสอบ ${fmtNum(total)} ตาราง — ทุกตารางมี Primary Key ครบ ✓`);
+    }
+  } catch (e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
+  finally { hideSpinner(); }
+}
+
+function exportNoPkToXlsx() {
+  if (!noPkResults.length) return;
+  const headers = ['#', 'ชื่อตาราง', 'จำนวน Record ต้นทาง', 'หมายเหตุ'];
+  const rows = noPkResults.map((r, i) => [i + 1, r.table, r.record_count >= 0 ? r.record_count : '-', 'ไม่มี Primary Key']);
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'No_PrimaryKey');
+  XLSX.writeFile(wb, `tables_no_pk_${_today()}.xlsx`);
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
 loadConfig();
 
@@ -1785,5 +4420,55 @@ loadConfig();
   el.addEventListener('hidden.bs.collapse', () => localStorage.setItem(KEY, 'false'));
 })();
 </script>
+<!-- ===== MODAL: Bulk Manage ===== -->
+<div class="modal fade" id="bulkManageModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable" style="max-width:min(98vw,2223px);width:98vw;">
+    <div class="modal-content">
+
+      <div class="modal-header py-2 flex-column align-items-start gap-1">
+        <div class="d-flex align-items-center w-100 gap-2">
+          <h5 class="modal-title mb-0" style="font-size:.95rem;">
+            <i class="bi bi-lightning-fill text-warning me-1"></i>จัดการข้อมูลทั้งหมดที่แสดง
+          </h5>
+          <div class="form-check mb-0 ms-3">
+            <input class="form-check-input" type="checkbox" id="bulk-select-all"
+                   onchange="selectAllBulk(this.checked)"
+                   style="border:2px solid #000; width:1.1em; height:1.1em;">
+            <label class="form-check-label small fw-semibold" for="bulk-select-all">เลือกทั้งหมด</label>
+          </div>
+          <span class="badge bg-primary" id="bulk-selected-count">0 เลือก</span>
+          <div class="ms-auto d-flex flex-wrap gap-2" id="bulk-action-buttons"></div>
+          <button type="button" class="btn-close ms-2" data-bs-dismiss="modal"></button>
+        </div>
+      </div>
+
+      <div class="modal-body p-0">
+        <div style="overflow-x:auto; max-height:70vh;">
+          <table class="table table-sm table-hover table-bordered mb-0">
+            <thead class="table-dark sticky-top">
+              <tr>
+                <th class="text-center" style="width:36px;">☐</th>
+                <th class="text-center" style="width:36px;">#</th>
+                <th style="min-width:200px;">ชื่อตาราง</th>
+                <th class="text-center" style="width:120px;">Src Count</th>
+                <th class="text-center" style="width:120px;">Dst Count</th>
+                <th class="text-center" style="width:90px;">ขาด</th>
+                <th class="text-center" style="width:130px;">สถานะ</th>
+                <th class="text-center" style="min-width:180px;">ผลลัพธ์</th>
+              </tr>
+            </thead>
+            <tbody id="bulk-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-footer py-2">
+        <span class="text-muted small me-auto" id="bulk-progress-text"></span>
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ปิด</button>
+      </div>
+
+    </div>
+  </div>
+</div>
 </body>
 </html>

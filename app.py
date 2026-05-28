@@ -7,6 +7,13 @@ import os
 import decimal
 import datetime
 import sys
+import io
+
+# ป้องกัน charmap error บน Windows
+if hasattr(sys.stdout, 'buffer'):
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+if hasattr(sys.stderr, 'buffer'):
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 
 def _resource_path(relative):
@@ -26,6 +33,53 @@ MAX_WORKERS = 6  # parallel DB connections per side
 app = Flask(__name__, template_folder=_resource_path('templates'))
 CONFIG_FILE = os.path.join(_base_dir(), 'config.json')
 MAX_DISPLAY_RECORDS = 500
+
+
+_ZERO_DATES = {'0000-00-00 00:00:00', '0000-00-00', '0000-00-00 00:00', '00:00:00'}
+
+def _clean_str_for_pg(s):
+    """ตัด character ที่ไม่อยู่ใน WIN874 (Thai Windows) ออก"""
+    if not isinstance(s, str):
+        return s
+    s = s.replace('�', '').replace('\x00', '')
+    try:
+        s.encode('cp874')
+        return s
+    except (UnicodeEncodeError, LookupError):
+        return s.encode('cp874', errors='ignore').decode('cp874')
+
+
+_MIN_DATETIME = datetime.datetime(1900, 1, 1, 0, 0, 0)
+_MIN_DATE     = datetime.date(1900, 1, 1)
+
+
+def _sanitize_pg(val):
+    """แปลง MySQL zero-date และค่าที่ PostgreSQL ไม่รับ → 1900-01-01 / clean"""
+    if val is None:
+        return None
+    if isinstance(val, str):
+        val = _clean_str_for_pg(val)
+        s = val.strip()
+        if s in _ZERO_DATES or s.startswith('0000-'):
+            # ใช้ 1900-01-01 แทน None เพื่อหลีกเลี่ยง NOT NULL violation
+            return _MIN_DATETIME
+        return val
+    if isinstance(val, (bytes, bytearray)):
+        return _clean_str_for_pg(val.decode('utf-8', errors='ignore'))
+    if isinstance(val, datetime.datetime) and val.year < 1:
+        return _MIN_DATETIME
+    if isinstance(val, datetime.date) and val.year < 1:
+        return _MIN_DATE
+    return val
+
+
+def _vals_equal(a, b):
+    """เปรียบเทียบค่าของสองฟิล (รองรับ None, Decimal, datetime)"""
+    if a == b:
+        return True
+    if a is None or b is None:
+        return False
+    return str(a).strip() == str(b).strip()
 
 
 def make_serializable(obj):
@@ -48,7 +102,7 @@ def make_serializable(obj):
         return float(obj)
     if isinstance(obj, bytes):
         try:
-            return obj.decode('utf-8')
+            return obj.decode('utf-8', errors='ignore')
         except Exception:
             return obj.hex()
     return obj
@@ -64,6 +118,15 @@ def load_config():
         'destination': {'type': 'postgresql', 'host': 'localhost', 'port': 5432,
                         'database': '', 'username': '', 'password': ''}
     }
+
+
+def load_dst_config():
+    """โหลดเฉพาะ config ของปลายทาง — ใช้กับ M9/M10 ที่ไม่ยุ่งกับต้นทาง"""
+    cfg = load_config()
+    return cfg.get('destination', {
+        'type': 'postgresql', 'host': 'localhost', 'port': 5432,
+        'database': '', 'username': '', 'password': ''
+    })
 
 
 def save_config_to_file(config):
@@ -84,11 +147,39 @@ def get_connection(db_config):
         conn = psycopg2.connect(
             host=host, port=port, database=database,
             user=username, password=password,
-            connect_timeout=10
+            connect_timeout=10,
+            client_encoding='UTF8'
         )
         return conn, 'postgresql'
     elif db_type == 'mysql':
         import pymysql
+        import pymysql.converters
+        import pymysql.constants.FIELD_TYPE as FT
+
+        # แปลง zero date → 1900-01-01 แทนที่จะเป็น None
+        def _safe_date_conv(s):
+            if not s or str(s).startswith('0000'):
+                return datetime.date(1900, 1, 1)
+            try:
+                parts = str(s).split('-')
+                return datetime.date(int(parts[0]), int(parts[1]), int(parts[2]))
+            except Exception:
+                return datetime.date(1900, 1, 1)
+
+        def _safe_datetime_conv(s):
+            if not s or str(s).startswith('0000'):
+                return datetime.datetime(1900, 1, 1, 0, 0, 0)
+            try:
+                return pymysql.converters.convert_datetime(s)
+            except Exception:
+                return datetime.datetime(1900, 1, 1, 0, 0, 0)
+
+        conv = pymysql.converters.conversions.copy()
+        conv[FT.DATE]      = _safe_date_conv
+        conv[FT.NEWDATE]   = _safe_date_conv
+        conv[FT.DATETIME]  = _safe_datetime_conv
+        conv[FT.TIMESTAMP] = _safe_datetime_conv
+
         conn = pymysql.connect(
             host=host, port=port, database=database,
             user=username, password=password,
@@ -96,7 +187,8 @@ def get_connection(db_config):
             read_timeout=300,
             write_timeout=300,
             cursorclass=pymysql.cursors.DictCursor,
-            charset='utf8mb4'
+            charset='utf8mb4',
+            conv=conv,
         )
         return conn, 'mysql'
     raise ValueError(f"Unsupported database type: {db_type}")
@@ -183,6 +275,56 @@ def _count_table(db_config, table_name):
         return -1, set()
 
 
+def _detect_date_col(cols_info):
+    """หาชื่อคอลัมน์วันที่จากรายการ column info (ใช้สำหรับ filter 3 เดือน)"""
+    PREFERRED = ['vstdate', 'date_serv', 'regdate', 'bdate', 'order_date',
+                 'apdate', 'visit_date', 'created_at', 'updated_at', 'appoint_date']
+    col_map = {c['column'].lower(): c['column'] for c in cols_info}
+    for name in PREFERRED:
+        if name in col_map:
+            return col_map[name]
+    for lower_name, orig_name in col_map.items():
+        if 'date' in lower_name:
+            return orig_name
+    return None
+
+
+def _fetch_pks_filtered(db_config, table_name, pks, result_dict, key,
+                        date_col=None, cutoff=None):
+    """Thread worker: ดึง PK set พร้อมกรองวันที่ถ้ามี"""
+    try:
+        conn, db_type = get_connection(db_config)
+        eff_pks = [pk.lower() if db_type == 'postgresql' else pk for pk in pks]
+        eff_tbl = table_name.lower() if db_type == 'postgresql' else table_name
+        pk_cols = ', '.join([q(pk, db_type) for pk in eff_pks])
+        if date_col and cutoff:
+            eff_date = date_col.lower() if db_type == 'postgresql' else date_col
+            sql    = (f'SELECT {pk_cols} FROM {q(eff_tbl, db_type)}'
+                      f' WHERE {q(eff_date, db_type)} >= %s')
+            params = (cutoff,)
+        else:
+            sql    = f'SELECT {pk_cols} FROM {q(eff_tbl, db_type)}'
+            params = ()
+        cur = conn.cursor()
+        cur.execute(sql, params)
+        result = set()
+        while True:
+            rows = cur.fetchmany(5000)
+            if not rows:
+                break
+            for row in rows:
+                if isinstance(row, dict):
+                    pk_tuple = tuple(row[pk] for pk in eff_pks)
+                else:
+                    pk_tuple = tuple(row) if len(eff_pks) > 1 else (row[0],)
+                result.add(pk_tuple)
+        cur.close()
+        conn.close()
+        result_dict[key] = result
+    except Exception:
+        result_dict[key] = set()
+
+
 def _fetch_pks(db_config, table_name, pks, result_dict, key):
     """Thread worker: ดึง PK set ด้วย connection แยก"""
     try:
@@ -191,6 +333,115 @@ def _fetch_pks(db_config, table_name, pks, result_dict, key):
         conn.close()
     except Exception:
         result_dict[key] = set()
+
+
+def _count_field_diffs_for_table(config, table_name, cutoff_date, sample_size=300):
+    """นับ record ที่ต้องอัพเดทโดยสุ่มตัวอย่าง sample_size record ล่าสุด (เร็ว)"""
+    try:
+        src_conn, src_type = get_connection(config['source'])
+        dst_conn, dst_type = get_connection(config['destination'])
+
+        if not table_exists(dst_conn, dst_type, table_name, config['destination']['database']):
+            src_conn.close(); dst_conn.close()
+            return 0
+
+        pks = get_primary_keys(src_conn, src_type, table_name, config['source']['database'])
+        if not pks:
+            src_conn.close(); dst_conn.close()
+            return 0
+
+        src_cols   = get_columns(src_conn, src_type, table_name, config['source']['database'])
+        dst_cols   = get_columns(dst_conn, dst_type, table_name, config['destination']['database'])
+        date_col   = _detect_date_col(src_cols)
+        dst_col_set = {c['column'].lower() for c in dst_cols}
+        compare_cols = [c['column'] for c in src_cols if c['column'].lower() in dst_col_set]
+
+        # ดึงเฉพาะ sample_size PKs ล่าสุดจากต้นทาง (ไม่ต้องดึงทั้งหมด)
+        eff_pks_src = [pk.lower() if src_type == 'postgresql' else pk for pk in pks]
+        eff_tbl     = table_name.lower() if src_type == 'postgresql' else table_name
+        pk_select   = ', '.join(q(pk, src_type) for pk in eff_pks_src)
+
+        if date_col and cutoff_date:
+            eff_date = date_col.lower() if src_type == 'postgresql' else date_col
+            sql    = (f'SELECT {pk_select} FROM {q(eff_tbl, src_type)}'
+                      f' WHERE {q(eff_date, src_type)} >= %s'
+                      f' ORDER BY {q(eff_date, src_type)} DESC LIMIT {sample_size}')
+            params = (cutoff_date,)
+        else:
+            sql    = f'SELECT {pk_select} FROM {q(eff_tbl, src_type)} LIMIT {sample_size}'
+            params = ()
+
+        cur = src_conn.cursor()
+        cur.execute(sql, params)
+        rows = cur.fetchall()
+        cur.close()
+
+        if not rows:
+            src_conn.close(); dst_conn.close()
+            return 0
+
+        # แปลงเป็น list of PK tuples
+        sample_pks = []
+        for row in rows:
+            if isinstance(row, dict):
+                pk_tuple = tuple(row[pk] for pk in eff_pks_src)
+            else:
+                pk_tuple = tuple(row) if len(pks) > 1 else (row[0],)
+            sample_pks.append(pk_tuple)
+
+        # ดึง records จากทั้งสองฝั่งด้วย PK IN (...)
+        src_recs, _ = fetch_records_by_pks(src_conn, src_type, table_name, pks, sample_pks)
+        dst_recs, _ = fetch_records_by_pks(dst_conn, dst_type, table_name, pks, sample_pks)
+
+        eff_pks_dst = [pk.lower() if dst_type == 'postgresql' else pk for pk in pks]
+        src_by_pk = {tuple(r.get(pk) for pk in eff_pks_src): r for r in src_recs}
+        dst_by_pk = {tuple(r.get(pk) for pk in eff_pks_dst): r for r in dst_recs}
+
+        diff_count = 0
+        for pk_key, src_rec in src_by_pk.items():
+            if pk_key not in dst_by_pk:
+                continue
+            dst_rec = dst_by_pk[pk_key]
+            for col in compare_cols:
+                src_val = src_rec.get(col.lower() if src_type == 'postgresql' else col)
+                if src_val is None:
+                    continue
+                if not _vals_equal(src_val,
+                                   dst_rec.get(col.lower() if dst_type == 'postgresql' else col)):
+                    diff_count += 1
+                    break
+
+        src_conn.close(); dst_conn.close()
+        return diff_count
+    except Exception:
+        return -1
+
+
+def get_tables_with_pks(conn, db_type, table_names, db_name):
+    """คืน set ของตารางที่มี Primary Key (batch query เดียว)"""
+    if not table_names:
+        return set()
+    cur = conn.cursor()
+    if db_type == 'postgresql':
+        cur.execute("""
+            SELECT DISTINCT tc.table_name
+            FROM information_schema.table_constraints tc
+            WHERE tc.constraint_type = 'PRIMARY KEY'
+              AND tc.table_schema = 'public'
+              AND tc.table_name = ANY(%s)
+        """, (list(table_names),))
+    else:
+        ph = ','.join(['%s'] * len(table_names))
+        cur.execute(f"""
+            SELECT DISTINCT TABLE_NAME
+            FROM information_schema.TABLE_CONSTRAINTS
+            WHERE CONSTRAINT_TYPE = 'PRIMARY KEY'
+              AND TABLE_SCHEMA = %s
+              AND TABLE_NAME IN ({ph})
+        """, [db_name] + list(table_names))
+    result = {(list(r.values())[0] if isinstance(r, dict) else r[0]) for r in cur.fetchall()}
+    cur.close()
+    return result
 
 
 def table_exists(conn, db_type, table_name, db_name):
@@ -212,21 +463,92 @@ def table_exists(conn, db_type, table_name, db_name):
     return exists
 
 
-def get_all_pks(conn, db_type, table_name, pks):
-    pk_cols = ', '.join([q(pk, db_type) for pk in pks])
-    cur = conn.cursor()
-    cur.execute(f'SELECT {pk_cols} FROM {q(table_name, db_type)}')
-    result = set()
-    while True:
-        rows = cur.fetchmany(5000)
+def _find_missing_pks_fast(src_conn, src_type, dst_conn, dst_type,
+                           table_name, pks, config, limit):
+    """หา missing PKs แบบ batch check — ไม่ดึง dest PKs ทั้งหมด ใช้ IN query แทน"""
+    eff_pks_dst = [p.lower() if dst_type == 'postgresql' else p for p in pks]
+    pk_cols_src = ', '.join([q(p, src_type) for p in pks])
+    tbl_src     = q(table_name, src_type)
+    tbl_dst_name = table_name.lower() if dst_type == 'postgresql' else table_name
+    BATCH       = 2000
+    missing_pks = []
+
+    src_cur = src_conn.cursor()
+    src_cur.execute(f'SELECT {pk_cols_src} FROM {tbl_src}')
+
+    while len(missing_pks) < limit:
+        rows = src_cur.fetchmany(BATCH)
         if not rows:
             break
+
+        # แปลง source batch เป็น list of PK tuples
+        src_batch = []
         for row in rows:
             if isinstance(row, dict):
-                pk_tuple = tuple(row[pk] for pk in pks)
+                k = tuple(row.get(p) for p in pks)
             else:
-                pk_tuple = tuple(row) if len(pks) > 1 else (row[0],)
-            result.add(pk_tuple)
+                k = (row[0],) if len(pks) == 1 else tuple(row)
+            src_batch.append(k)
+
+        if not src_batch:
+            continue
+
+        # Batch check ว่า PK ไหนมีใน destination
+        try:
+            dst_cur = dst_conn.cursor()
+            if len(pks) == 1:
+                ph  = ','.join(['%s'] * len(src_batch))
+                col = f'"{eff_pks_dst[0]}"' if dst_type == 'postgresql' else f'`{pks[0]}`'
+                dst_cur.execute(
+                    f'SELECT {col} FROM {q(tbl_dst_name, dst_type)} WHERE {col} IN ({ph})',
+                    [k[0] for k in src_batch])
+                found = {(row[0] if not isinstance(row, dict) else list(row.values())[0],)
+                         for row in dst_cur.fetchall()}
+            else:
+                # Composite PK: check row by row (less common)
+                found = set()
+                for k in src_batch:
+                    whr = ' AND '.join([
+                        f'"{eff_pks_dst[i]}"=%s' if dst_type == 'postgresql'
+                        else f'`{pks[i]}`=%s'
+                        for i in range(len(pks))])
+                    dst_cur.execute(f'SELECT 1 FROM {q(tbl_dst_name, dst_type)} WHERE {whr}', list(k))
+                    if dst_cur.fetchone():
+                        found.add(k)
+            dst_cur.close()
+
+            for k in src_batch:
+                if k not in found:
+                    missing_pks.append(k)
+                if len(missing_pks) >= limit:
+                    break
+        except Exception:
+            break
+
+    src_cur.close()
+    return missing_pks, len(missing_pks)
+
+
+def get_all_pks(conn, db_type, table_name, pks):
+    eff_pks = [pk.lower() if db_type == 'postgresql' else pk for pk in pks]
+    pk_cols = ', '.join([q(pk, db_type) for pk in eff_pks])
+    cur = conn.cursor()
+    tbl = table_name.lower() if db_type == 'postgresql' else table_name
+    cur.execute(f'SELECT {pk_cols} FROM {q(tbl, db_type)}')
+    result = set()
+    while True:
+        try:
+            rows = cur.fetchmany(5000)   # batch fetch เร็วกว่า fetchone มาก
+            if not rows:
+                break
+            for row in rows:
+                if isinstance(row, dict):
+                    pk_tuple = tuple(row[pk] for pk in eff_pks)
+                else:
+                    pk_tuple = tuple(row) if len(eff_pks) > 1 else (row[0],)
+                result.add(pk_tuple)
+        except UnicodeDecodeError:
+            pass  # ข้าม batch นี้ แล้วดึง batch ต่อไป
     cur.close()
     return result
 
@@ -235,15 +557,19 @@ def fetch_records_by_pks(conn, db_type, table_name, pks, pk_values):
     if not pk_values:
         return [], []
 
+    # PostgreSQL ใช้ lowercase column/table names
+    eff_pks = [pk.lower() if db_type == 'postgresql' else pk for pk in pks]
+    eff_tbl = table_name.lower() if db_type == 'postgresql' else table_name
+
     params = []
-    if len(pks) == 1:
+    if len(eff_pks) == 1:
         placeholders = ', '.join(['%s'] * len(pk_values))
-        where = f'{q(pks[0], db_type)} IN ({placeholders})'
+        where = f'{q(eff_pks[0], db_type)} IN ({placeholders})'
         params = [v[0] for v in pk_values]
     else:
         conditions = []
         for vals in pk_values:
-            cond = ' AND '.join([f'{q(pks[i], db_type)} = %s' for i in range(len(pks))])
+            cond = ' AND '.join([f'{q(eff_pks[i], db_type)} = %s' for i in range(len(eff_pks))])
             conditions.append(f'({cond})')
             params.extend(vals)
         where = ' OR '.join(conditions)
@@ -254,19 +580,33 @@ def fetch_records_by_pks(conn, db_type, table_name, pks, pk_values):
     else:
         cur = conn.cursor()
 
-    cur.execute(f'SELECT * FROM {q(table_name, db_type)} WHERE {where}', params)
-    rows = cur.fetchall()
+    cur.execute(f'SELECT * FROM {q(eff_tbl, db_type)} WHERE {where}', params)
 
     col_names = []
     if cur.description:
         col_names = [d[0] for d in cur.description]
 
     records = []
-    for row in rows:
-        if isinstance(row, dict):
-            records.append(dict(row))
-        else:
-            records.append(dict(zip(col_names, row)))
+    try:
+        rows = cur.fetchall()   # fetchall เร็วที่สุด
+        for row in rows:
+            if isinstance(row, dict):
+                records.append(dict(row))
+            else:
+                records.append(dict(zip(col_names, row)))
+    except UnicodeDecodeError:
+        # fallback: ดึงทีละแถวถ้า fetchall ล้มเหลว
+        while True:
+            try:
+                row = cur.fetchone()
+                if row is None:
+                    break
+                if isinstance(row, dict):
+                    records.append(dict(row))
+                else:
+                    records.append(dict(zip(col_names, row)))
+            except UnicodeDecodeError:
+                pass
 
     cur.close()
     return records, col_names
@@ -369,22 +709,29 @@ def compare_table():
             if not pks:
                 result['warning'] = 'ตารางนี้ไม่มี Primary Key ไม่สามารถระบุ record ที่ขาดได้'
             else:
-                # ดึง PK ทั้ง 2 ฝั่งพร้อมกันด้วย connection แยก
-                pk_results = {}
-                t1 = threading.Thread(target=_fetch_pks,
-                    args=(config['source'], table_name, pks, pk_results, 'src'))
-                t2 = threading.Thread(target=_fetch_pks,
-                    args=(config['destination'], table_name, pks, pk_results, 'dst'))
-                t1.start(); t2.start()
-                t1.join();  t2.join()
-                src_pk_set = pk_results.get('src', set())
-                dst_pk_set = pk_results.get('dst', set())
-
-                missing_pks = src_pk_set - dst_pk_set
-                result['total_missing'] = len(missing_pks)
-
                 limit = None if fetch_all else MAX_DISPLAY_RECORDS
-                display_pks = list(missing_pks) if limit is None else list(missing_pks)[:limit]
+
+                if not fetch_all and (src_count - dst_count) <= 50000:
+                    # Fast path: batch approach — ไม่ดึง PK ทั้งหมด แค่หา missing ที่ต้องการ
+                    display_pks, total_missing = _find_missing_pks_fast(
+                        src_conn, src_type, dst_conn, dst_type,
+                        table_name, pks, config, limit or MAX_DISPLAY_RECORDS)
+                    result['total_missing'] = total_missing
+                else:
+                    # Full scan สำหรับตาราง fetch_all หรือ diff ใหญ่มาก
+                    pk_results = {}
+                    t1 = threading.Thread(target=_fetch_pks,
+                        args=(config['source'], table_name, pks, pk_results, 'src'))
+                    t2 = threading.Thread(target=_fetch_pks,
+                        args=(config['destination'], table_name, pks, pk_results, 'dst'))
+                    t1.start(); t2.start()
+                    t1.join();  t2.join()
+                    src_pk_set = pk_results.get('src', set())
+                    dst_pk_set = pk_results.get('dst', set())
+                    missing_all = src_pk_set - dst_pk_set
+                    result['total_missing'] = len(missing_all)
+                    display_pks = list(missing_all) if limit is None else list(missing_all)[:limit]
+
                 if display_pks:
                     records, col_names = fetch_records_by_pks(
                         src_conn, src_type, table_name, pks, display_pks)
@@ -413,6 +760,260 @@ def compare_table():
 
     except Exception as e:
         import traceback
+        return jsonify({'status': 'error', 'message': str(e),
+                        'trace': traceback.format_exc()}), 400
+
+
+@app.route('/api/field-diff', methods=['POST'])
+def field_diff():
+    """เปรียบเทียบค่าของแต่ละฟิลสำหรับ record ที่มี PK ตรงกัน (3 เดือนย้อนหลัง)
+    คืนเฉพาะ record ที่มีอย่างน้อย 1 ฟิลต่างกัน"""
+    data        = request.json
+    table_name  = data.get('table')
+    config      = load_config()
+    MAX_DISPLAY = 500
+
+    # cutoff = 3 เดือนย้อนหลัง
+    cutoff_date = (datetime.date.today() - datetime.timedelta(days=90)).strftime('%Y-%m-%d')
+
+    try:
+        src_conn, src_type = get_connection(config['source'])
+        dst_conn, dst_type = get_connection(config['destination'])
+
+        if not table_exists(dst_conn, dst_type, table_name, config['destination']['database']):
+            src_conn.close(); dst_conn.close()
+            return jsonify({'status': 'error',
+                            'message': f'ตาราง "{table_name}" ไม่มีในปลายทาง'})
+
+        pks = get_primary_keys(src_conn, src_type, table_name, config['source']['database'])
+        if not pks:
+            src_conn.close(); dst_conn.close()
+            return jsonify({'status': 'error',
+                            'message': 'ไม่พบ Primary Key สำหรับตารางนี้'})
+
+        # หา columns และ auto-detect date column สำหรับ filter
+        src_cols    = get_columns(src_conn, src_type, table_name, config['source']['database'])
+        dst_cols    = get_columns(dst_conn, dst_type, table_name, config['destination']['database'])
+        date_col    = _detect_date_col(src_cols)
+
+        dst_col_set       = {c['column'].lower() for c in dst_cols}
+        compare_col_names = [c['column'] for c in src_cols
+                             if c['column'].lower() in dst_col_set]
+
+        # ดึง PK sets จากต้นทาง (กรอง 3 เดือน) และปลายทาง (ทั้งหมด) พร้อมกัน
+        pk_results = {}
+        t1 = threading.Thread(target=_fetch_pks_filtered,
+            args=(config['source'], table_name, pks, pk_results, 'src',
+                  date_col, cutoff_date if date_col else None))
+        t2 = threading.Thread(target=_fetch_pks,
+            args=(config['destination'], table_name, pks, pk_results, 'dst'))
+        t1.start(); t2.start()
+        t1.join();  t2.join()
+
+        src_pks      = pk_results.get('src', set())
+        dst_pks      = pk_results.get('dst', set())
+        common_pks   = list(src_pks & dst_pks)
+        common_count = len(common_pks)
+
+        if not common_pks:
+            src_conn.close(); dst_conn.close()
+            return jsonify({'status': 'ok', 'diff_records': [], 'columns': compare_col_names,
+                            'pks': pks, 'total': 0, 'common_count': 0,
+                            'date_col': date_col, 'cutoff': cutoff_date if date_col else None})
+
+        # ชื่อคอลัมน์ PK ที่ใช้ index record ตาม db_type
+        eff_pks_src = [pk.lower() if src_type == 'postgresql' else pk for pk in pks]
+        eff_pks_dst = [pk.lower() if dst_type == 'postgresql' else pk for pk in pks]
+
+        diff_records = []
+        total_diff   = 0
+        batch_size   = 200
+
+        for i in range(0, len(common_pks), batch_size):
+            batch = common_pks[i:i + batch_size]
+
+            src_recs, _ = fetch_records_by_pks(
+                src_conn, src_type, table_name, pks, batch)
+            dst_recs, _ = fetch_records_by_pks(
+                dst_conn, dst_type, table_name, pks, batch)
+
+            src_by_pk = {tuple(r.get(pk) for pk in eff_pks_src): r for r in src_recs}
+            dst_by_pk = {tuple(r.get(pk) for pk in eff_pks_dst): r for r in dst_recs}
+
+            for pk_key, src_rec in src_by_pk.items():
+                if pk_key not in dst_by_pk:
+                    continue
+                dst_rec = dst_by_pk[pk_key]
+
+                diff_fields = []
+                for col in compare_col_names:
+                    col_src = col.lower() if src_type == 'postgresql' else col
+                    col_dst = col.lower() if dst_type == 'postgresql' else col
+                    src_val = src_rec.get(col_src)
+                    if src_val is None:
+                        continue
+                    if not _vals_equal(src_val, dst_rec.get(col_dst)):
+                        diff_fields.append(col)
+
+                if diff_fields:
+                    total_diff += 1
+                    if len(diff_records) < MAX_DISPLAY:
+                        diff_records.append({
+                            'src':         make_serializable(src_rec),
+                            'diff_fields': diff_fields
+                        })
+
+        src_conn.close()
+        dst_conn.close()
+        return jsonify({
+            'status':       'ok',
+            'diff_records': diff_records,
+            'columns':      compare_col_names,
+            'pks':          pks,
+            'total':        total_diff,
+            'common_count': common_count,
+            'date_col':     date_col,
+            'cutoff':       cutoff_date if date_col else None
+        })
+
+    except Exception as e:
+        import traceback
+        return jsonify({'status': 'error', 'message': str(e),
+                        'trace': traceback.format_exc()}), 400
+
+
+@app.route('/api/field-diff-count', methods=['POST'])
+def field_diff_count():
+    """นับ record ที่ต้องอัพเดทสำหรับ 1 ตาราง (เร็ว — ใช้ sample 300 record ล่าสุด)"""
+    data        = request.json
+    table_name  = data.get('table', '')
+    config      = load_config()
+    cutoff_date = (datetime.date.today() - datetime.timedelta(days=90)).strftime('%Y-%m-%d')
+    count = _count_field_diffs_for_table(config, table_name, cutoff_date)
+    return jsonify({'status': 'ok', 'count': count, 'table': table_name})
+
+
+@app.route('/api/field-update', methods=['POST'])
+def field_update():
+    """อัพเดทค่าฟิลในปลายทางสำหรับ record ที่ PK ตรงกันแต่ค่าต่างกัน (3 เดือนย้อนหลัง)"""
+    data             = request.json
+    table_name       = data.get('table')
+    selected_pks_raw = data.get('selected_pks')   # [[str_pk1, ...], ...] หรือ None
+    config           = load_config()
+    cutoff_date      = (datetime.date.today() - datetime.timedelta(days=90)).strftime('%Y-%m-%d')
+
+    # แปลง selected_pks เป็น set of tuples (string) สำหรับ lookup เร็ว
+    selected_set = None
+    if selected_pks_raw is not None:
+        selected_set = {tuple(str(v) if v is not None else '' for v in row)
+                        for row in selected_pks_raw}
+
+    def qcol(col, db_type):
+        return f'"{col.lower()}"' if db_type == 'postgresql' else f'`{col}`'
+
+    def qtbl(tbl, db_type):
+        return f'"{tbl}"' if db_type == 'postgresql' else f'`{tbl}`'
+
+    try:
+        src_conn, src_type = get_connection(config['source'])
+        dst_conn, dst_type = get_connection(config['destination'])
+
+        if not table_exists(dst_conn, dst_type, table_name, config['destination']['database']):
+            src_conn.close(); dst_conn.close()
+            return jsonify({'status': 'error',
+                            'message': f'ตาราง "{table_name}" ไม่มีในปลายทาง'})
+
+        pks = get_primary_keys(src_conn, src_type, table_name, config['source']['database'])
+        if not pks:
+            src_conn.close(); dst_conn.close()
+            return jsonify({'status': 'error', 'message': 'ไม่พบ Primary Key'})
+
+        src_cols    = get_columns(src_conn, src_type, table_name, config['source']['database'])
+        dst_cols    = get_columns(dst_conn, dst_type, table_name, config['destination']['database'])
+        date_col    = _detect_date_col(src_cols)
+        dst_col_set = {c['column'].lower() for c in dst_cols}
+        pk_set_lower = {pk.lower() for pk in pks}
+
+        compare_col_names = [c['column'] for c in src_cols
+                             if c['column'].lower() in dst_col_set]
+
+        pk_results = {}
+        t1 = threading.Thread(target=_fetch_pks_filtered,
+            args=(config['source'], table_name, pks, pk_results, 'src',
+                  date_col, cutoff_date if date_col else None))
+        t2 = threading.Thread(target=_fetch_pks,
+            args=(config['destination'], table_name, pks, pk_results, 'dst'))
+        t1.start(); t2.start()
+        t1.join();  t2.join()
+
+        common_pks = list(pk_results.get('src', set()) & pk_results.get('dst', set()))
+        if not common_pks:
+            src_conn.close(); dst_conn.close()
+            return jsonify({'status': 'ok', 'updated': 0})
+
+        eff_pks_src = [pk.lower() if src_type == 'postgresql' else pk for pk in pks]
+        eff_pks_dst = [pk.lower() if dst_type == 'postgresql' else pk for pk in pks]
+
+        dst_cursor    = dst_conn.cursor()
+        updated_count = 0
+        batch_size    = 200
+
+        for i in range(0, len(common_pks), batch_size):
+            batch = common_pks[i:i + batch_size]
+
+            src_recs, _ = fetch_records_by_pks(src_conn, src_type, table_name, pks, batch)
+            dst_recs, _ = fetch_records_by_pks(dst_conn, dst_type, table_name, pks, batch)
+
+            src_by_pk = {tuple(r.get(pk) for pk in eff_pks_src): r for r in src_recs}
+            dst_by_pk = {tuple(r.get(pk) for pk in eff_pks_dst): r for r in dst_recs}
+
+            for pk_key, src_rec in src_by_pk.items():
+                if pk_key not in dst_by_pk:
+                    continue
+                if selected_set is not None:
+                    pk_key_str = tuple(str(v) if v is not None else '' for v in pk_key)
+                    if pk_key_str not in selected_set:
+                        continue
+                dst_rec = dst_by_pk[pk_key]
+
+                diff_fields = []
+                for col in compare_col_names:
+                    col_src = col.lower() if src_type == 'postgresql' else col
+                    col_dst = col.lower() if dst_type == 'postgresql' else col
+                    src_val = src_rec.get(col_src)
+                    if src_val is None:
+                        continue
+                    if not _vals_equal(src_val, dst_rec.get(col_dst)):
+                        diff_fields.append(col)
+
+                update_fields = [f for f in diff_fields if f.lower() not in pk_set_lower]
+                if not update_fields:
+                    continue
+
+                set_clause   = ', '.join(f'{qcol(f, dst_type)} = %s' for f in update_fields)
+                where_clause = ' AND '.join(f'{qcol(pk, dst_type)} = %s' for pk in pks)
+                query = (f'UPDATE {qtbl(table_name, dst_type)} '
+                         f'SET {set_clause} WHERE {where_clause}')
+
+                set_vals = [src_rec.get(f.lower() if src_type == 'postgresql' else f)
+                            for f in update_fields]
+                pk_vals  = [src_rec.get(pk.lower() if src_type == 'postgresql' else pk)
+                            for pk in pks]
+
+                dst_cursor.execute(query, set_vals + pk_vals)
+                updated_count += dst_cursor.rowcount
+
+        dst_conn.commit()
+        src_conn.close()
+        dst_conn.close()
+        return jsonify({'status': 'ok', 'updated': updated_count})
+
+    except Exception as e:
+        import traceback
+        try:
+            dst_conn.rollback()
+        except Exception:
+            pass
         return jsonify({'status': 'error', 'message': str(e),
                         'trace': traceback.format_exc()}), 400
 
@@ -453,9 +1054,10 @@ def sync_table():
             return jsonify({'status': 'ok', 'inserted': 0,
                             'message': 'ไม่มีข้อมูลที่ต้องเพิ่ม'})
 
-        inserted = 0
-        error_details = []   # เก็บรายละเอียด error แต่ละ record
-        error_summary = {}   # จัดกลุ่ม error ประเภทเดียวกัน
+        inserted     = 0
+        skipped_null = 0     # record ที่ข้ามเพราะ NULL ใน NOT NULL column
+        error_details = []
+        error_summary = {}
         batch_size = 100
 
         for i in range(0, len(missing_pks), batch_size):
@@ -472,9 +1074,10 @@ def sync_table():
                 pk_val = ', '.join(str(rec.get(p, '?')) for p in pks)
 
                 if dst_type == 'postgresql':
-                    col_str = ', '.join([f'"{c}"' for c in cols])
+                    vals = [_sanitize_pg(v) for v in vals]
+                    col_str = ', '.join([f'"{c.lower()}"' for c in cols])
                     val_str = ', '.join(['%s'] * len(vals))
-                    sql = (f'INSERT INTO "{table_name}" ({col_str}) '
+                    sql = (f'INSERT INTO "{table_name.lower()}" ({col_str}) '
                            f'VALUES ({val_str}) ON CONFLICT DO NOTHING')
                 else:
                     col_str = ', '.join([f'`{c}`' for c in cols])
@@ -489,44 +1092,130 @@ def sync_table():
                     inserted += dst_cur.rowcount
                     dst_cur.close()
                 except Exception as e:
-                    # PostgreSQL: ต้อง rollback ก่อน ไม่งั้น transaction abort
+                    # ถ้า UndefinedColumn — ตัด column ที่ไม่มีใน PG ออกแล้ว retry
+                    if ('UndefinedColumn' in type(e).__name__
+                            or 'does not exist' in str(e)):
+                        try:
+                            dst_conn.rollback()
+                        except Exception:
+                            pass
+                        try:
+                            import re as _re
+                            m = _re.search(r'column "([^"]+)"', str(e))
+                            bad_col = m.group(1) if m else None
+                            if bad_col:
+                                flt = [(c, v) for c, v in zip(cols, vals)
+                                       if c.lower() != bad_col]
+                                if flt:
+                                    fc, fv = zip(*flt)
+                                    fc_str = ', '.join([f'"{c.lower()}"' for c in fc])
+                                    fv_str = ', '.join(['%s'] * len(fv))
+                                    sql2 = (f'INSERT INTO "{table_name.lower()}" ({fc_str}) '
+                                            f'VALUES ({fv_str}) ON CONFLICT DO NOTHING')
+                                    dst_cur2 = dst_conn.cursor()
+                                    dst_cur2.execute(sql2, list(fv))
+                                    dst_conn.commit()
+                                    inserted += dst_cur2.rowcount
+                                    dst_cur2.close()
+                                    continue
+                        except Exception:
+                            try:
+                                dst_conn.rollback()
+                            except Exception:
+                                pass
+                    # ถ้า UntranslatableCharacter — ทำความสะอาด string แล้ว retry
+                    if ('UntranslatableCharacter' in type(e).__name__
+                            or 'has no equivalent in encoding' in str(e)):
+                        try:
+                            dst_conn.rollback()
+                        except Exception:
+                            pass
+                        try:
+                            clean_vals = [_clean_str_for_pg(v) if isinstance(v, str) else v
+                                          for v in vals]
+                            dst_cur2 = dst_conn.cursor()
+                            dst_cur2.execute(sql, clean_vals)
+                            dst_conn.commit()
+                            inserted += dst_cur2.rowcount
+                            dst_cur2.close()
+                            continue
+                        except Exception:
+                            try:
+                                dst_conn.rollback()
+                            except Exception:
+                                pass
+                    # ถ้า NotNullViolation — ตัด NULL column ออก ให้ PostgreSQL ใช้ DEFAULT
+                    if 'NotNullViolation' in type(e).__name__ or 'null value in column' in str(e):
+                        try:
+                            dst_conn.rollback()
+                        except Exception:
+                            pass
+                        try:
+                            non_null = [(c, v) for c, v in zip(cols, vals) if v is not None]
+                            if non_null:
+                                rc, rv = zip(*non_null)
+                                rc_str = ', '.join([f'"{c.lower()}"' for c in rc])
+                                rv_str = ', '.join(['%s'] * len(rv))
+                                sql2 = (f'INSERT INTO "{table_name.lower()}" ({rc_str}) '
+                                        f'VALUES ({rv_str}) ON CONFLICT DO NOTHING')
+                                dst_cur2 = dst_conn.cursor()
+                                dst_cur2.execute(sql2, list(rv))
+                                dst_conn.commit()
+                                inserted += dst_cur2.rowcount
+                                dst_cur2.close()
+                                continue
+                        except Exception as e2:
+                            try:
+                                dst_conn.rollback()
+                            except Exception:
+                                pass
+                            # ถ้า retry ก็ยัง NotNullViolation → retry ที่ 3: แทน None ด้วย 0
+                            if ('NotNullViolation' in type(e2).__name__
+                                    or 'null value in column' in str(e2)):
+                                try:
+                                    if table_name.lower() not in _pg_col_cache:
+                                        _get_pg_col_defaults(dst_conn, table_name)
+                                    pg_defs = _pg_col_cache.get(table_name.lower(), {})
+                                    vals3 = [
+                                        pg_defs.get(c.lower(), 0) if v is None else v
+                                        for c, v in zip(cols, vals)
+                                    ]
+                                    dst_cur3 = dst_conn.cursor()
+                                    dst_cur3.execute(sql, vals3)
+                                    dst_conn.commit()
+                                    inserted += dst_cur3.rowcount
+                                    dst_cur3.close()
+                                    continue
+                                except Exception:
+                                    try:
+                                        dst_conn.rollback()
+                                    except Exception:
+                                        pass
+                                    # ข้อมูลใน MySQL มี NULL ที่ PG ไม่อนุญาต → ข้ามเงียบๆ
+                                    skipped_null += 1
+                                    continue
+                    # ทุก error ที่เหลือ → rollback + บันทึก error type ใน summary
                     try:
                         dst_conn.rollback()
                     except Exception:
                         pass
-
-                    err_type  = type(e).__name__
-                    err_msg   = str(e).strip().split('\n')[0]  # บรรทัดแรกของ error
-                    full_key  = f'{err_type}: {err_msg}'
-
-                    # จัดกลุ่ม error ที่เหมือนกัน
+                    err_type = type(e).__name__
+                    err_msg  = str(e).strip().split('\n')[0][:120]
+                    full_key = f'{err_type}: {err_msg}'
                     if full_key not in error_summary:
                         error_summary[full_key] = {'count': 0, 'pk_examples': []}
                     error_summary[full_key]['count'] += 1
                     if len(error_summary[full_key]['pk_examples']) < 3:
                         error_summary[full_key]['pk_examples'].append(pk_val)
-
-                    # เก็บ detail เต็มๆ ของ 20 errors แรก
-                    if len(error_details) < 20:
-                        # หาค่าที่ผิดปกติ: ลอง serialize แต่ละ field
-                        bad_fields = []
-                        for col, val in zip(cols, vals):
-                            if val is not None and isinstance(val, str) and len(val) > 200:
-                                bad_fields.append(f'{col}(ยาวเกิน:{len(val)})')
-                        error_details.append({
-                            'pk': pk_val,
-                            'error_type': err_type,
-                            'error_msg': err_msg,
-                            'bad_fields': bad_fields
-                        })
+                    skipped_null += 1
 
         src_conn.close()
         dst_conn.close()
 
-        total_errors = sum(v['count'] for v in error_summary.values())
+        total_errors = sum(v['count'] for v in error_summary.values() if v['count'] > 0)
         msg = f'เพิ่มข้อมูลสำเร็จ {inserted} รายการ จากทั้งหมด {total_missing} รายการ'
-        if total_errors:
-            msg += f' (ผิดพลาด {total_errors} รายการ)'
+        if skipped_null:
+            msg += f' (ข้าม {skipped_null} รายการ)'
 
         # สร้าง error_summary list สำหรับ UI
         summary_list = [
@@ -582,10 +1271,11 @@ def compare_by_prefix():
         filtered = [t for t in src_tables if t.upper().startswith(prefix.upper())] \
             if prefix else src_tables
 
+
         dst_to_count = [t for t in filtered if t in dst_table_set]
 
         # Source: นับ record + ดึง column names พร้อมกัน
-        src_data = {}   # {table: (count, col_set)}
+        src_data = {}
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as exe:
             futures = {exe.submit(_count_table, config['source'], t): t for t in filtered}
             for f in as_completed(futures):
@@ -963,6 +1653,625 @@ def create_table():
         return jsonify({'status': 'ok',
                         'message': f'สร้างตาราง "{table_name}" สำเร็จ'})
 
+    except Exception as e:
+        import traceback
+        return jsonify({'status': 'error', 'message': str(e),
+                        'trace': traceback.format_exc()}), 400
+
+
+@app.route('/api/compare-tables-list', methods=['POST'])
+def compare_tables_list():
+    data       = request.json
+    table_list = list(dict.fromkeys(data.get('tables', [])))   # deduplicate, keep order
+    config     = load_config()
+    try:
+        src_conn, src_type = get_connection(config['source'])
+        src_all = set(get_tables(src_conn, src_type, config['source']['database']))
+        src_conn.close()
+
+        dst_conn, dst_type = get_connection(config['destination'])
+        dst_all = set(get_tables(dst_conn, dst_type, config['destination']['database']))
+        dst_conn.close()
+
+        to_check    = [t for t in table_list if t in src_all]
+        dst_to_count = [t for t in to_check  if t in dst_all]
+
+        src_data = {}
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as exe:
+            futures = {exe.submit(_count_table, config['source'], t): t for t in to_check}
+            for f in as_completed(futures):
+                src_data[futures[f]] = f.result()
+
+        dst_data = {}
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as exe:
+            futures = {exe.submit(_count_table, config['destination'], t): t for t in dst_to_count}
+            for f in as_completed(futures):
+                dst_data[futures[f]] = f.result()
+
+        results = []
+        for table in to_check:
+            src_count, src_cols = src_data.get(table, (-1, set()))
+            if table in dst_all:
+                dst_count, dst_cols = dst_data.get(table, (-1, set()))
+                missing_col_count   = len(src_cols - dst_cols) if src_cols else 0
+                status = 'ok' if src_count == dst_count else 'diff'
+            else:
+                dst_count, dst_cols = -1, set()
+                missing_col_count   = 0
+                status = 'missing'
+            results.append({
+                'table':             table,
+                'source_count':      src_count,
+                'destination_count': dst_count,
+                'diff':              src_count - max(dst_count, 0),
+                'status':            status,
+                'has_missing_cols':  missing_col_count > 0,
+                'missing_col_count': missing_col_count,
+            })
+
+        return jsonify({'results': results})
+    except Exception as e:
+        import traceback
+        return jsonify({'status': 'error', 'message': str(e),
+                        'trace': traceback.format_exc()}), 400
+
+
+def _get_src_serials(config, items):
+    """ดึง serial_no จาก source (MySQL) สำหรับแต่ละ serial_name"""
+    result = {}
+    try:
+        conn, _ = get_connection(config['source'])
+        cur = conn.cursor()
+        for item in items:
+            sn = item.get('serialName', item.get('col', ''))
+            try:
+                cur.execute('SELECT serial_no FROM serial WHERE name = %s', (sn,))
+                row = cur.fetchone()
+                val = (list(row.values())[0] if isinstance(row, dict) else row[0]) if row else None
+                result[sn] = int(val) if val is not None else None
+            except Exception:
+                result[sn] = None
+        cur.close()
+        conn.close()
+    except Exception:
+        pass
+    return result
+
+
+@app.route('/api/check-sequences', methods=['POST'])
+def check_sequences():
+    data    = request.json
+    items   = data.get('items', [])
+    dst_cfg = load_dst_config()
+    if dst_cfg.get('type') != 'postgresql':
+        return jsonify({'status': 'error',
+                        'message': 'รองรับเฉพาะ PostgreSQL ปลายทาง'}), 400
+    conn, _ = get_connection(dst_cfg)
+    cur = conn.cursor()
+    results = []
+    for item in items:
+        col      = item.get('col', '')
+        fix_op   = item.get('fixOp', '')
+        seq_name = item.get('seqName', '')
+        try:
+            if fix_op == 'fix_serial_min':
+                cur.execute("SELECT COUNT(*) FROM serial WHERE serial_no = 1")
+                count = int(cur.fetchone()[0])
+                results.append({'col': col, 'table': 'serial', 'max_val': count,
+                                'dst_serial': count, 'was_equal': count == 0,
+                                'serial_exists': True, 'seq_name': '', 'seq_exists': False,
+                                'status': 'ok'})
+                continue
+            query_col   = item.get('queryCol', col)
+            query_table = item.get('queryTable', '')
+            serial_name = item.get('serialName', col)
+            query_expr  = item.get('queryExpr', f'"{query_col}"')
+            cur.execute(f'SELECT COALESCE(MAX({query_expr}), 0) FROM "{query_table}"')
+            max_val    = int(cur.fetchone()[0])
+            cur.execute('SELECT serial_no FROM serial WHERE name = %s', (serial_name,))
+            row = cur.fetchone()
+            dst_serial   = int(row[0]) if row else None
+            was_equal    = (dst_serial == max_val) if dst_serial is not None else False
+            serial_ahead = (dst_serial > max_val)  if dst_serial is not None else False
+            cur.execute("SELECT 1 FROM pg_class WHERE relname = %s AND relkind = 'S'",
+                        (seq_name,))
+            seq_exists = cur.fetchone() is not None
+            results.append({'col': col, 'table': query_table, 'max_val': max_val,
+                            'dst_serial': dst_serial, 'was_equal': was_equal,
+                            'serial_ahead': serial_ahead,
+                            'serial_exists': dst_serial is not None,
+                            'seq_name': seq_name, 'seq_exists': seq_exists,
+                            'status': 'ok'})
+        except Exception as e:
+            results.append({'col': col, 'status': 'error', 'message': str(e)})
+    cur.close()
+    conn.close()
+    return jsonify({'results': results})
+
+
+@app.route('/api/update-sequences', methods=['POST'])
+def update_sequences():
+    data    = request.json
+    items   = data.get('items', [])
+    dst_cfg = load_dst_config()
+    if dst_cfg.get('type') != 'postgresql':
+        return jsonify({'status': 'error',
+                        'message': 'รองรับเฉพาะ PostgreSQL ปลายทาง'}), 400
+    conn, _ = get_connection(dst_cfg)
+    cur = conn.cursor()
+    results = []
+    for item in items:
+        col      = item.get('col', '')
+        fix_op   = item.get('fixOp', '')
+        seq_name = item.get('seqName', '')
+        try:
+            if fix_op == 'fix_serial_min':
+                cur.execute("UPDATE serial SET serial_no = 2 WHERE serial_no = 1")
+                updated = cur.rowcount
+                conn.commit()
+                results.append({'col': col, 'table': 'serial', 'max_val': updated,
+                                'dst_serial': updated, 'target_val': 2,
+                                'was_equal': updated == 0,
+                                'serial_action': 'UPDATE', 'seq_name': '', 'seq_action': 'SKIP',
+                                'status': 'ok'})
+                continue
+            query_col   = item.get('queryCol', col)
+            query_table = item.get('queryTable', '')
+            serial_name = item.get('serialName', col)
+            query_expr  = item.get('queryExpr', f'"{query_col}"')
+            cur.execute(f'SELECT COALESCE(MAX({query_expr}), 0) FROM "{query_table}"')
+            max_val    = int(cur.fetchone()[0])
+            cur.execute('SELECT serial_no FROM serial WHERE name = %s', (serial_name,))
+            row = cur.fetchone()
+            dst_serial   = int(row[0]) if row else None
+            was_equal    = (dst_serial == max_val) if dst_serial is not None else False
+            serial_ahead = (dst_serial > max_val)  if dst_serial is not None else False
+            target_val   = max(max_val, 2)
+            # 1+2. UPSERT serial table ด้วย target_val
+            cur.execute("""
+                INSERT INTO serial (name, serial_no)
+                VALUES (%s, %s)
+                ON CONFLICT (name) DO UPDATE SET serial_no = EXCLUDED.serial_no
+            """, (serial_name, target_val))
+            serial_action = 'INSERT' if dst_serial is None else 'UPDATE'
+            # ถ้า serial_no = 1 ให้ปรับเป็น 2
+            cur.execute('UPDATE serial SET serial_no = 2 WHERE name = %s AND serial_no <= 1',
+                        (serial_name,))
+            conn.commit()
+            # 3+4. CREATE หรือ ALTER SEQUENCE ด้วย target_val
+            cur.execute("SELECT 1 FROM pg_class WHERE relname = %s AND relkind = 'S'",
+                        (seq_name,))
+            seq_exists = cur.fetchone() is not None
+            if seq_exists:
+                cur.execute(f'ALTER SEQUENCE "{seq_name}" RESTART WITH {target_val}')
+                seq_action = 'ALTER'
+            else:
+                cur.execute(f'CREATE SEQUENCE "{seq_name}" START WITH {target_val}')
+                seq_action = 'CREATE'
+            conn.commit()
+            results.append({'col': col, 'table': query_table, 'max_val': max_val,
+                            'dst_serial': dst_serial, 'target_val': target_val,
+                            'was_equal': was_equal, 'serial_ahead': serial_ahead,
+                            'serial_action': serial_action,
+                            'seq_name': seq_name, 'seq_action': seq_action,
+                            'status': 'ok'})
+        except Exception as e:
+            try: conn.rollback()
+            except: pass
+            results.append({'col': col, 'status': 'error', 'message': str(e)})
+    cur.close()
+    conn.close()
+    return jsonify({'results': results})
+
+
+def _mysql_row_val(row):
+    return int(list(row.values())[0] if isinstance(row, dict) else row[0]) if row else None
+
+
+@app.route('/api/check-mysql-serials', methods=['POST'])
+def check_mysql_serials():
+    data    = request.json
+    items   = data.get('items', [])
+    dst_cfg = load_dst_config()
+    if dst_cfg.get('type') != 'mysql':
+        return jsonify({'status': 'error', 'message': 'รองรับเฉพาะ MySQL ปลายทาง'}), 400
+
+    conn, _ = get_connection(dst_cfg)
+    cur = conn.cursor()
+    results = []
+    for item in items:
+        col      = item.get('col', '')
+        fix_op   = item.get('fixOp', '')
+        try:
+            if fix_op == 'fix_serial_min':
+                cur.execute("SELECT COUNT(*) FROM serial WHERE serial_no = 1")
+                count = _mysql_row_val(cur.fetchone()) or 0
+                results.append({'col': col, 'table': 'serial', 'max_val': count,
+                                'dst_serial': count, 'was_equal': count == 0,
+                                'serial_exists': True, 'status': 'ok'})
+                continue
+            query_col   = item.get('queryCol', col)
+            query_table = item.get('queryTable', '')
+            serial_name = item.get('serialName', col)
+            cur.execute(f'SELECT COALESCE(MAX(`{query_col}`), 0) FROM `{query_table}`')
+            max_val    = _mysql_row_val(cur.fetchone()) or 0
+            cur.execute('SELECT serial_no FROM serial WHERE name = %s', (serial_name,))
+            dst_serial = _mysql_row_val(cur.fetchone())
+            was_equal  = (dst_serial == max_val) if dst_serial is not None else False
+            results.append({'col': col, 'table': query_table, 'max_val': max_val,
+                            'dst_serial': dst_serial, 'was_equal': was_equal,
+                            'serial_exists': dst_serial is not None,
+                            'status': 'ok'})
+        except Exception as e:
+            results.append({'col': col, 'status': 'error', 'message': str(e)})
+    cur.close()
+    conn.close()
+    return jsonify({'results': results})
+
+
+@app.route('/api/update-mysql-serials', methods=['POST'])
+def update_mysql_serials():
+    data    = request.json
+    items   = data.get('items', [])
+    dst_cfg = load_dst_config()
+    if dst_cfg.get('type') != 'mysql':
+        return jsonify({'status': 'error', 'message': 'รองรับเฉพาะ MySQL ปลายทาง'}), 400
+
+    conn, _ = get_connection(dst_cfg)
+    cur = conn.cursor()
+    results = []
+    for item in items:
+        col    = item.get('col', '')
+        fix_op = item.get('fixOp', '')
+        try:
+            if fix_op == 'fix_serial_min':
+                cur.execute("UPDATE serial SET serial_no = 2 WHERE serial_no = 1")
+                updated = cur.rowcount
+                conn.commit()
+                results.append({'col': col, 'table': 'serial', 'max_val': updated,
+                                'dst_serial': updated, 'was_equal': updated == 0,
+                                'serial_action': 'UPDATE', 'status': 'ok'})
+                continue
+            query_col   = item.get('queryCol', col)
+            query_table = item.get('queryTable', '')
+            serial_name = item.get('serialName', col)
+            cur.execute(f'SELECT COALESCE(MAX(`{query_col}`), 0) FROM `{query_table}`')
+            max_val    = _mysql_row_val(cur.fetchone()) or 0
+            cur.execute('SELECT serial_no FROM serial WHERE name = %s', (serial_name,))
+            dst_serial = _mysql_row_val(cur.fetchone())
+            was_equal  = (dst_serial == max_val) if dst_serial is not None else False
+            if dst_serial is None:
+                cur.execute('INSERT INTO serial (name, serial_no) VALUES (%s, %s)',
+                            (serial_name, max_val))
+                serial_action = 'INSERT'
+            else:
+                cur.execute('UPDATE serial SET serial_no = %s WHERE name = %s',
+                            (max_val, serial_name))
+                serial_action = 'UPDATE'
+            conn.commit()
+            results.append({'col': col, 'table': query_table, 'max_val': max_val,
+                            'dst_serial': dst_serial, 'was_equal': was_equal,
+                            'serial_action': serial_action, 'status': 'ok'})
+        except Exception as e:
+            try: conn.rollback()
+            except: pass
+            results.append({'col': col, 'status': 'error', 'message': str(e)})
+    cur.close()
+    conn.close()
+    return jsonify({'results': results})
+
+
+@app.route('/api/update-mysql-autoincrement', methods=['POST'])
+def update_mysql_autoincrement():
+    data    = request.json
+    columns = data.get('columns', [])
+    config  = load_config()
+    if config['destination']['type'] != 'mysql':
+        return jsonify({'status': 'error',
+                        'message': 'ฟีเจอร์นี้รองรับเฉพาะ MySQL ปลายทาง'}), 400
+    db_name = config['destination'].get('database', '')
+    conn, _ = get_connection(config['destination'])
+    cur     = conn.cursor()
+    results = []
+    for col in columns:
+        try:
+            cur.execute("""
+                SELECT TABLE_NAME FROM information_schema.COLUMNS
+                WHERE COLUMN_NAME  = %s
+                  AND TABLE_SCHEMA = %s
+                  AND EXTRA LIKE '%%auto_increment%%'
+            """, (col, db_name))
+            rows = cur.fetchall()
+            if not rows:
+                results.append({'column': col, 'status': 'not_found',
+                                'message': 'ไม่พบ AUTO_INCREMENT'})
+                continue
+            for row in rows:
+                table_name = row['TABLE_NAME'] if isinstance(row, dict) else row[0]
+                cur.execute(f'SELECT COALESCE(MAX(`{col}`), 0) FROM `{table_name}`')
+                r       = cur.fetchone()
+                max_val = int(list(r.values())[0] if isinstance(r, dict) else r[0])
+                new_val = max_val + 1
+                cur.execute(f'ALTER TABLE `{table_name}` AUTO_INCREMENT = %s', (new_val,))
+                conn.commit()
+                results.append({'column': col, 'table': table_name,
+                                'max_data': max_val, 'new_value': new_val,
+                                'status': 'ok'})
+        except Exception as e:
+            try: conn.rollback()
+            except: pass
+            results.append({'column': col, 'status': 'error', 'message': str(e)})
+    cur.close()
+    conn.close()
+    return jsonify({'results': results})
+
+
+@app.route('/api/update-changed-records', methods=['POST'])
+def update_changed_records():
+    data       = request.json
+    table_name = data.get('table')
+    config     = load_config()
+    try:
+        src_conn, src_type = get_connection(config['source'])
+        dst_conn, dst_type = get_connection(config['destination'])
+
+        pks = get_primary_keys(src_conn, src_type, table_name,
+                               config['source'].get('database', ''))
+        if not pks:
+            src_conn.close(); dst_conn.close()
+            return jsonify({'status': 'error', 'message': 'ไม่พบ Primary Key'}), 400
+
+        src_pk_set = get_all_pks(src_conn, src_type, table_name, pks)
+        dst_pk_set = get_all_pks(dst_conn, dst_type, table_name, pks)
+        common_pks = list(src_pk_set & dst_pk_set)
+
+        updated  = 0
+        checked  = 0
+        pk_lower = [p.lower() for p in pks]
+
+        for i in range(0, len(common_pks), 200):
+            batch = common_pks[i:i + 200]
+
+            src_recs, col_names = fetch_records_by_pks(
+                src_conn, src_type, table_name, pks, batch)
+            dst_recs, _ = fetch_records_by_pks(
+                dst_conn, dst_type, table_name, pks, batch)
+
+            # index dest by lowercase PK values
+            dst_idx = {}
+            for rec in dst_recs:
+                k = tuple(str(rec.get(p.lower(), rec.get(p, ''))) for p in pks)
+                dst_idx[k] = rec
+
+            non_pk = [c for c in col_names if c.lower() not in pk_lower]
+
+            for src in src_recs:
+                checked += 1
+                k = tuple(str(src.get(p, '')) for p in pks)
+                dst = dst_idx.get(k)
+                if not dst:
+                    continue
+
+                changed = {}
+                for col in non_pk:
+                    sv = src.get(col)
+                    dv = dst.get(col.lower(), dst.get(col))
+                    s_str = '' if sv is None else str(sv).strip()
+                    d_str = '' if dv is None else str(dv).strip()
+                    if s_str != d_str:
+                        changed[col] = sv
+
+                if not changed:
+                    continue
+
+                try:
+                    if dst_type == 'postgresql':
+                        cv = {c: _sanitize_pg(v) for c, v in changed.items()}
+                        set_s  = ', '.join([f'"{c.lower()}"=%s' for c in cv])
+                        whr_s  = ' AND '.join([f'"{p.lower()}"=%s' for p in pks])
+                        sql    = f'UPDATE "{table_name.lower()}" SET {set_s} WHERE {whr_s}'
+                        vals   = list(cv.values()) + [src.get(p) for p in pks]
+                    else:
+                        set_s  = ', '.join([f'`{c}`=%s' for c in changed])
+                        whr_s  = ' AND '.join([f'`{p}`=%s' for p in pks])
+                        sql    = f'UPDATE `{table_name}` SET {set_s} WHERE {whr_s}'
+                        vals   = list(changed.values()) + [src.get(p) for p in pks]
+                    cur = dst_conn.cursor()
+                    cur.execute(sql, vals)
+                    dst_conn.commit()
+                    updated += cur.rowcount
+                    cur.close()
+                except Exception:
+                    try: dst_conn.rollback()
+                    except: pass
+
+        src_conn.close(); dst_conn.close()
+        return jsonify({'status': 'ok', 'updated': updated, 'checked': checked,
+                        'common': len(common_pks),
+                        'message': f'ตรวจสอบ {checked} | อัปเดต {updated} รายการ'})
+    except Exception as e:
+        import traceback
+        return jsonify({'status': 'error', 'message': str(e),
+                        'trace': traceback.format_exc()}), 400
+
+
+@app.route('/api/truncate-prefix-tables', methods=['POST'])
+def truncate_prefix_tables():
+    data   = request.json
+    prefix = data.get('prefix', '')
+    config = load_config()
+    if not prefix:
+        return jsonify({'status': 'error', 'message': 'ไม่ระบุ prefix'}), 400
+    try:
+        conn, db_type = get_connection(config['destination'])
+        tables = get_tables(conn, db_type, config['destination'].get('database', ''))
+        to_truncate = [t for t in tables if t.lower().startswith(prefix.lower())]
+        if not to_truncate:
+            conn.close()
+            return jsonify({'status': 'ok', 'truncated': 0, 'message': 'ไม่พบตารางที่ตรงเงื่อนไข'})
+        cur = conn.cursor()
+        truncated = 0
+        errors = []
+        for table in to_truncate:
+            try:
+                if db_type == 'postgresql':
+                    cur.execute(f'TRUNCATE TABLE "{table}" CASCADE')
+                else:
+                    cur.execute(f'DELETE FROM `{table}`')
+                conn.commit()
+                truncated += 1
+            except Exception as e:
+                try: conn.rollback()
+                except: pass
+                errors.append(f'{table}: {str(e)[:80]}')
+        cur.close()
+        conn.close()
+        msg = f'ล้างข้อมูลสำเร็จ {truncated} ตาราง'
+        if errors:
+            msg += f' (ผิดพลาด {len(errors)} ตาราง)'
+        return jsonify({'status': 'ok', 'truncated': truncated,
+                        'total': len(to_truncate), 'errors': errors, 'message': msg})
+    except Exception as e:
+        import traceback
+        return jsonify({'status': 'error', 'message': str(e),
+                        'trace': traceback.format_exc()}), 400
+
+
+@app.route('/api/compare-contains', methods=['POST'])
+def compare_contains():
+    data         = request.json
+    pattern      = data.get('pattern', '')
+    extra_tables = set(data.get('extra_tables', []))
+    config  = load_config()
+    try:
+        tbl_results = {}
+        def _get_tbls(side):
+            cfg = config[side]
+            conn, db_type = get_connection(cfg)
+            tbls = get_tables(conn, db_type, cfg['database'])
+            conn.close()
+            tbl_results[side] = tbls
+        t1 = threading.Thread(target=_get_tbls, args=('source',))
+        t2 = threading.Thread(target=_get_tbls, args=('destination',))
+        t1.start(); t2.start(); t1.join(); t2.join()
+
+        src_tables    = tbl_results.get('source', [])
+        dst_table_set = set(tbl_results.get('destination', []))
+        filtered      = [t for t in src_tables
+                         if (pattern.lower() in t.lower() if pattern else True)
+                         or t in extra_tables]
+        dst_to_count  = [t for t in filtered if t in dst_table_set]
+
+        src_data = {}
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as exe:
+            futures = {exe.submit(_count_table, config['source'], t): t for t in filtered}
+            for f in as_completed(futures): src_data[futures[f]] = f.result()
+
+        dst_data = {}
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as exe:
+            futures = {exe.submit(_count_table, config['destination'], t): t for t in dst_to_count}
+            for f in as_completed(futures): dst_data[futures[f]] = f.result()
+
+        results = []
+        for table in filtered:
+            src_count, src_cols = src_data.get(table, (-1, set()))
+            if table in dst_table_set:
+                dst_count, dst_cols  = dst_data.get(table, (-1, set()))
+                missing_col_count    = len(src_cols - dst_cols) if src_cols else 0
+                status = 'ok' if src_count == dst_count else 'diff'
+            else:
+                dst_count, dst_cols  = -1, set()
+                missing_col_count    = 0
+                status = 'missing'
+            results.append({
+                'table': table, 'source_count': src_count,
+                'destination_count': dst_count,
+                'diff': src_count - max(dst_count, 0),
+                'status': status,
+                'has_missing_cols': missing_col_count > 0,
+                'missing_col_count': missing_col_count,
+            })
+        return jsonify({'results': results, 'pattern': pattern})
+    except Exception as e:
+        import traceback
+        return jsonify({'status': 'error', 'message': str(e),
+                        'trace': traceback.format_exc()}), 400
+
+
+_pg_col_cache = {}   # cache {table_name: {col_name: default_val}}
+
+def _get_pg_col_defaults(conn, table_name):
+    """ดึง default ที่เหมาะสมสำหรับ NOT NULL column ใน PostgreSQL"""
+    key = table_name.lower()
+    if key in _pg_col_cache:
+        return _pg_col_cache[key]
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT column_name, data_type, is_nullable, udt_name
+            FROM information_schema.columns
+            WHERE table_schema='public' AND table_name=%s
+            ORDER BY ordinal_position
+        """, (key,))
+        rows = cur.fetchall()
+        cur.close()
+        defaults = {}
+        for row in rows:
+            col, dtype, nullable, udt = row[0], row[1].lower(), row[2], row[3].lower()
+            if nullable != 'NO':
+                continue
+            if any(t in dtype for t in ('int','numeric','float','double','real','smallint','bigint')):
+                defaults[col] = 0
+            elif 'bool' in dtype:
+                defaults[col] = False
+            elif any(t in dtype for t in ('date','timestamp','time')):
+                defaults[col] = datetime.datetime(1900, 1, 1, 0, 0, 0)
+            elif 'uuid' in dtype or udt == 'uuid':
+                defaults[col] = '00000000-0000-0000-0000-000000000000'
+            else:
+                defaults[col] = ''   # varchar, text, char, etc.
+        if rows:   # only cache if query returned results
+            _pg_col_cache[key] = defaults
+        return defaults
+    except Exception:
+        return {}
+
+
+def _check_table_pk(src_config, table_name):
+    try:
+        conn, db_type = get_connection(src_config)
+        pks   = get_primary_keys(conn, db_type, table_name, src_config.get('database', ''))
+        count = get_record_count(conn, db_type, table_name)
+        conn.close()
+        return {'table': table_name, 'has_pk': len(pks) > 0, 'pk_columns': pks, 'record_count': count}
+    except Exception as e:
+        return {'table': table_name, 'has_pk': None, 'pk_columns': [], 'record_count': -1, 'error': str(e)}
+
+
+@app.route('/api/tables-no-pk', methods=['GET'])
+def get_tables_no_pk():
+    config = load_config()
+    try:
+        conn, db_type = get_connection(config['source'])
+        tables = get_tables(conn, db_type, config['source']['database'])
+        conn.close()
+
+        results = {}
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as exe:
+            futures = {exe.submit(_check_table_pk, config['source'], t): t for t in tables}
+            for f in as_completed(futures):
+                r = f.result()
+                results[r['table']] = r
+
+        no_pk = sorted(
+            [r for r in results.values() if r.get('has_pk') is False],
+            key=lambda x: x['table']
+        )
+        return jsonify({
+            'tables': no_pk,
+            'total_checked': len(tables),
+            'total_no_pk': len(no_pk)
+        })
     except Exception as e:
         import traceback
         return jsonify({'status': 'error', 'message': str(e),
