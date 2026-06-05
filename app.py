@@ -64,8 +64,8 @@ def _sanitize_pg(val):
             # ใช้ 1900-01-01 แทน None เพื่อหลีกเลี่ยง NOT NULL violation
             return _MIN_DATETIME
         return val
-    if isinstance(val, (bytes, bytearray)):
-        return _clean_str_for_pg(val.decode('utf-8', errors='ignore'))
+    if isinstance(val, (bytes, bytearray, memoryview)):
+        return bytes(val)  # keep binary as-is for BYTEA columns
     if isinstance(val, datetime.datetime) and val.year < 1:
         return _MIN_DATETIME
     if isinstance(val, datetime.date) and val.year < 1:
@@ -73,12 +73,22 @@ def _sanitize_pg(val):
     return val
 
 
+def _is_binary_type(type_raw):
+    """ตรวจว่า column type เป็น binary/blob หรือไม่"""
+    t = (type_raw or '').lower()
+    return any(x in t for x in ('blob', 'binary', 'bytea', 'varbinary'))
+
+
 def _vals_equal(a, b):
-    """เปรียบเทียบค่าของสองฟิล (รองรับ None, Decimal, datetime)"""
+    """เปรียบเทียบค่าของสองฟิล (รองรับ None, Decimal, datetime, bytes)"""
     if a == b:
         return True
     if a is None or b is None:
         return False
+    if isinstance(a, (bytes, bytearray, memoryview)) or isinstance(b, (bytes, bytearray, memoryview)):
+        ba = bytes(a) if isinstance(a, (bytes, bytearray, memoryview)) else None
+        bb = bytes(b) if isinstance(b, (bytes, bytearray, memoryview)) else None
+        return ba == bb
     return str(a).strip() == str(b).strip()
 
 
@@ -100,11 +110,9 @@ def make_serializable(obj):
         return f'{"-" if total < 0 else ""}{h:02d}:{m:02d}:{s:02d}'
     if isinstance(obj, decimal.Decimal):
         return float(obj)
-    if isinstance(obj, bytes):
-        try:
-            return obj.decode('utf-8', errors='ignore')
-        except Exception:
-            return obj.hex()
+    if isinstance(obj, (bytes, bytearray, memoryview)):
+        n = len(obj) if not isinstance(obj, memoryview) else obj.nbytes
+        return f'[BINARY: {n:,} bytes]'
     return obj
 
 
@@ -354,7 +362,9 @@ def _count_field_diffs_for_table(config, table_name, cutoff_date, sample_size=30
         dst_cols   = get_columns(dst_conn, dst_type, table_name, config['destination']['database'])
         date_col   = _detect_date_col(src_cols)
         dst_col_set = {c['column'].lower() for c in dst_cols}
-        compare_cols = [c['column'] for c in src_cols if c['column'].lower() in dst_col_set]
+        compare_cols = [c['column'] for c in src_cols
+                        if c['column'].lower() in dst_col_set
+                        and not _is_binary_type(c['type_raw'])]
 
         # ดึงเฉพาะ sample_size PKs ล่าสุดจากต้นทาง (ไม่ต้องดึงทั้งหมด)
         eff_pks_src = [pk.lower() if src_type == 'postgresql' else pk for pk in pks]
@@ -798,7 +808,8 @@ def field_diff():
 
         dst_col_set       = {c['column'].lower() for c in dst_cols}
         compare_col_names = [c['column'] for c in src_cols
-                             if c['column'].lower() in dst_col_set]
+                             if c['column'].lower() in dst_col_set
+                             and not _is_binary_type(c['type_raw'])]  # ข้าม binary/image
 
         # ดึง PK sets จากต้นทาง (กรอง 3 เดือน) และปลายทาง (ทั้งหมด) พร้อมกัน
         pk_results = {}
@@ -935,7 +946,8 @@ def field_update():
         pk_set_lower = {pk.lower() for pk in pks}
 
         compare_col_names = [c['column'] for c in src_cols
-                             if c['column'].lower() in dst_col_set]
+                             if c['column'].lower() in dst_col_set
+                             and not _is_binary_type(c['type_raw'])]  # ข้าม binary/image
 
         pk_results = {}
         t1 = threading.Thread(target=_fetch_pks_filtered,
@@ -1018,6 +1030,114 @@ def field_update():
                         'trace': traceback.format_exc()}), 400
 
 
+@app.route('/api/sync-selected-pks', methods=['POST'])
+def sync_selected_pks():
+    """M9: นำเข้าเฉพาะ PK ที่ผู้ใช้เลือก (selected_pks) จากต้นทางไปปลายทาง"""
+    data         = request.json
+    table_name   = data.get('table')
+    selected_raw = data.get('selected_pks', [])   # [[str_pk1,...], ...]
+    config       = load_config()
+
+    try:
+        src_conn, src_type = get_connection(config['source'])
+        dst_conn, dst_type = get_connection(config['destination'])
+
+        pks = get_primary_keys(src_conn, src_type, table_name, config['source']['database'])
+        if not pks:
+            return jsonify({'status': 'error', 'message': 'ไม่พบ Primary Key'})
+
+        # แปลง selected_pks จาก string → tuple ที่ใช้ได้กับ fetch_records_by_pks
+        def _try_int(v):
+            try: return int(v)
+            except (TypeError, ValueError): return v
+
+        selected_pks = []
+        for row in selected_raw:
+            if not row:   # ข้าม [] กรณี PK ว่างเปล่า (bug guard)
+                continue
+            selected_pks.append(tuple(_try_int(v) if v is not None else None for v in row))
+
+        if not selected_pks:
+            return jsonify({'status': 'ok', 'inserted': 0, 'skipped': 0,
+                            'message': 'ไม่พบ PK ที่เลือก'})
+
+        inserted = 0
+        skipped  = 0
+        batch_size = 500
+
+        for i in range(0, len(selected_pks), batch_size):
+            batch = selected_pks[i:i + batch_size]
+            records, _ = fetch_records_by_pks(src_conn, src_type, table_name, pks, batch)
+
+            if not records:
+                continue
+
+            # --- FAST PATH: batch insert ---
+            try:
+                cols_b = list(records[0].keys())
+                if dst_type == 'postgresql':
+                    from psycopg2.extras import execute_values as _ev
+                    col_str_b = ', '.join(f'"{c.lower()}"' for c in cols_b)
+                    vals_list = [[_sanitize_pg(rec.get(c)) for c in cols_b]
+                                 for rec in records]
+                    sql_b = (f'INSERT INTO "{table_name.lower()}" ({col_str_b}) '
+                             f'VALUES %s ON CONFLICT DO NOTHING')
+                    bcur = dst_conn.cursor()
+                    _ev(bcur, sql_b, vals_list, page_size=100)
+                    inserted += len(records)
+                    bcur.close()
+                else:
+                    col_str_b = ', '.join(f'`{c}`' for c in cols_b)
+                    val_str_b = ', '.join(['%s'] * len(cols_b))
+                    sql_b = (f'INSERT IGNORE INTO `{table_name}` ({col_str_b}) '
+                             f'VALUES ({val_str_b})')
+                    vals_list = [[rec.get(c) for c in cols_b] for rec in records]
+                    bcur = dst_conn.cursor()
+                    bcur.executemany(sql_b, vals_list)
+                    inserted += max(bcur.rowcount, 0)
+                    bcur.close()
+                dst_conn.commit()
+                continue
+            except Exception:
+                try: dst_conn.rollback()
+                except Exception: pass
+
+            # --- SLOW PATH: per-record ---
+            for rec in records:
+                cols = list(rec.keys())
+                vals = [rec[c] for c in cols]
+                if dst_type == 'postgresql':
+                    vals    = [_sanitize_pg(v) for v in vals]
+                    col_str = ', '.join([f'"{c.lower()}"' for c in cols])
+                    val_str = ', '.join(['%s'] * len(vals))
+                    sql = (f'INSERT INTO "{table_name.lower()}" ({col_str}) '
+                           f'VALUES ({val_str}) ON CONFLICT DO NOTHING')
+                else:
+                    col_str = ', '.join([f'`{c}`' for c in cols])
+                    val_str = ', '.join(['%s'] * len(vals))
+                    sql = f'INSERT IGNORE INTO `{table_name}` ({col_str}) VALUES ({val_str})'
+                try:
+                    cur = dst_conn.cursor()
+                    cur.execute(sql, vals)
+                    dst_conn.commit()
+                    if cur.rowcount > 0:
+                        inserted += 1
+                    else:
+                        skipped  += 1
+                    cur.close()
+                except Exception as e:
+                    try: dst_conn.rollback()
+                    except: pass
+                    skipped += 1
+
+        src_conn.close()
+        dst_conn.close()
+        return jsonify({'status': 'ok', 'inserted': inserted, 'skipped': skipped})
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
+
+
 @app.route('/api/sync-table', methods=['POST'])
 def sync_table():
     data = request.json
@@ -1045,7 +1165,15 @@ def sync_table():
         except Exception:
             dst_pk_set = set()
 
-        missing_pks = list(src_pk_set - dst_pk_set)
+        def _pk_sort_key(t):
+            v = t[0] if t else None
+            if v is None:
+                return (0, 0, '')   # None อยู่ท้ายสุดเมื่อ reverse=True
+            if isinstance(v, (int, float)):
+                return (1, v, '')
+            return (1, 0, str(v))
+
+        missing_pks = sorted(src_pk_set - dst_pk_set, key=_pk_sort_key, reverse=True)
         total_missing = len(missing_pks)
 
         if total_missing == 0:
@@ -1058,7 +1186,7 @@ def sync_table():
         skipped_null = 0     # record ที่ข้ามเพราะ NULL ใน NOT NULL column
         error_details = []
         error_summary = {}
-        batch_size = 100
+        batch_size = 500
 
         for i in range(0, len(missing_pks), batch_size):
             batch = missing_pks[i:i + batch_size]
@@ -1068,6 +1196,38 @@ def sync_table():
             if not records:
                 continue
 
+            # --- FAST PATH: batch insert (ไม่ commit ทีละ row) ---
+            try:
+                cols_b = list(records[0].keys())
+                if dst_type == 'postgresql':
+                    from psycopg2.extras import execute_values as _ev
+                    col_str_b = ', '.join(f'"{c.lower()}"' for c in cols_b)
+                    vals_list = [[_sanitize_pg(rec.get(c)) for c in cols_b]
+                                 for rec in records]
+                    sql_b = (f'INSERT INTO "{table_name.lower()}" ({col_str_b}) '
+                             f'VALUES %s ON CONFLICT DO NOTHING')
+                    bcur = dst_conn.cursor()
+                    _ev(bcur, sql_b, vals_list, page_size=100)
+                    inserted += len(records)
+                    bcur.close()
+                else:
+                    col_str_b = ', '.join(f'`{c}`' for c in cols_b)
+                    val_str_b = ', '.join(['%s'] * len(cols_b))
+                    sql_b = (f'INSERT IGNORE INTO `{table_name}` ({col_str_b}) '
+                             f'VALUES ({val_str_b})')
+                    vals_list = [[rec.get(c) for c in cols_b] for rec in records]
+                    bcur = dst_conn.cursor()
+                    bcur.executemany(sql_b, vals_list)
+                    inserted += max(bcur.rowcount, 0)
+                    bcur.close()
+                dst_conn.commit()
+                continue   # ข้าม slow-path ถ้า batch สำเร็จ
+            except Exception:
+                try: dst_conn.rollback()
+                except Exception: pass
+                # fall-through ไปยัง slow-path ด้านล่าง
+
+            # --- SLOW PATH: per-record พร้อม error-handling เดิม ---
             for rec in records:
                 cols = list(rec.keys())
                 vals = [rec[c] for c in cols]
@@ -1768,15 +1928,17 @@ def check_sequences():
             query_expr  = item.get('queryExpr', f'"{query_col}"')
             cur.execute(f'SELECT COALESCE(MAX({query_expr}), 0) FROM "{query_table}"')
             max_val    = int(cur.fetchone()[0])
+            target_val   = max(max_val + 1, 2)
             cur.execute('SELECT serial_no FROM serial WHERE name = %s', (serial_name,))
             row = cur.fetchone()
             dst_serial   = int(row[0]) if row else None
-            was_equal    = (dst_serial == max_val) if dst_serial is not None else False
-            serial_ahead = (dst_serial > max_val)  if dst_serial is not None else False
+            was_equal    = (dst_serial == target_val) if dst_serial is not None else False
+            serial_ahead = (dst_serial > target_val)  if dst_serial is not None else False
             cur.execute("SELECT 1 FROM pg_class WHERE relname = %s AND relkind = 'S'",
                         (seq_name,))
             seq_exists = cur.fetchone() is not None
             results.append({'col': col, 'table': query_table, 'max_val': max_val,
+                            'target_val': target_val,
                             'dst_serial': dst_serial, 'was_equal': was_equal,
                             'serial_ahead': serial_ahead,
                             'serial_exists': dst_serial is not None,
@@ -1821,12 +1983,12 @@ def update_sequences():
             query_expr  = item.get('queryExpr', f'"{query_col}"')
             cur.execute(f'SELECT COALESCE(MAX({query_expr}), 0) FROM "{query_table}"')
             max_val    = int(cur.fetchone()[0])
+            target_val   = max(max_val + 1, 2)
             cur.execute('SELECT serial_no FROM serial WHERE name = %s', (serial_name,))
             row = cur.fetchone()
             dst_serial   = int(row[0]) if row else None
-            was_equal    = (dst_serial == max_val) if dst_serial is not None else False
-            serial_ahead = (dst_serial > max_val)  if dst_serial is not None else False
-            target_val   = max(max_val, 2)
+            was_equal    = (dst_serial == target_val) if dst_serial is not None else False
+            serial_ahead = (dst_serial > target_val)  if dst_serial is not None else False
             # 1+2. UPSERT serial table ด้วย target_val
             cur.execute("""
                 INSERT INTO serial (name, serial_no)
@@ -1895,10 +2057,12 @@ def check_mysql_serials():
             serial_name = item.get('serialName', col)
             cur.execute(f'SELECT COALESCE(MAX(`{query_col}`), 0) FROM `{query_table}`')
             max_val    = _mysql_row_val(cur.fetchone()) or 0
+            target_val = max_val + 1
             cur.execute('SELECT serial_no FROM serial WHERE name = %s', (serial_name,))
             dst_serial = _mysql_row_val(cur.fetchone())
-            was_equal  = (dst_serial == max_val) if dst_serial is not None else False
+            was_equal  = (dst_serial == target_val) if dst_serial is not None else False
             results.append({'col': col, 'table': query_table, 'max_val': max_val,
+                            'target_val': target_val,
                             'dst_serial': dst_serial, 'was_equal': was_equal,
                             'serial_exists': dst_serial is not None,
                             'status': 'ok'})
@@ -1937,19 +2101,21 @@ def update_mysql_serials():
             serial_name = item.get('serialName', col)
             cur.execute(f'SELECT COALESCE(MAX(`{query_col}`), 0) FROM `{query_table}`')
             max_val    = _mysql_row_val(cur.fetchone()) or 0
+            target_val = max_val + 1
             cur.execute('SELECT serial_no FROM serial WHERE name = %s', (serial_name,))
             dst_serial = _mysql_row_val(cur.fetchone())
-            was_equal  = (dst_serial == max_val) if dst_serial is not None else False
+            was_equal  = (dst_serial == target_val) if dst_serial is not None else False
             if dst_serial is None:
                 cur.execute('INSERT INTO serial (name, serial_no) VALUES (%s, %s)',
-                            (serial_name, max_val))
+                            (serial_name, target_val))
                 serial_action = 'INSERT'
             else:
                 cur.execute('UPDATE serial SET serial_no = %s WHERE name = %s',
-                            (max_val, serial_name))
+                            (target_val, serial_name))
                 serial_action = 'UPDATE'
             conn.commit()
             results.append({'col': col, 'table': query_table, 'max_val': max_val,
+                            'target_val': target_val,
                             'dst_serial': dst_serial, 'was_equal': was_equal,
                             'serial_action': serial_action, 'status': 'ok'})
         except Exception as e:

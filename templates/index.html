@@ -107,6 +107,10 @@
     #tab10-link        { background:linear-gradient(160deg,#a3e635,#4d7c0f); color:#fff; box-shadow:0 4px 8px rgba(77,124,15,.35),0 1px 0 rgba(255,255,255,.3) inset; }
     #tab10-link.active { background:linear-gradient(160deg,#65a30d,#365314); box-shadow:0 2px 4px rgba(54,83,20,.5) inset; }
 
+    /* Tab 12 — Teal (M9: ตรวจสอบตาม PK) */
+    #tab12-link        { background:linear-gradient(160deg,#2dd4bf,#0f766e); color:#fff; box-shadow:0 4px 8px rgba(15,118,110,.35),0 1px 0 rgba(255,255,255,.3) inset; }
+    #tab12-link.active { background:linear-gradient(160deg,#0d9488,#134e4a); box-shadow:0 2px 4px rgba(19,78,74,.5) inset; }
+
     /* Tables */
     .table { font-size: .9rem; }
     .table th { font-size: .825rem; }
@@ -363,15 +367,20 @@
         <i class="bi bi-clipboard2-heart me-1"></i>M8: ตาราง PPL
       </a>
     </li>
+    <li class="nav-item">
+      <a class="nav-link px-3 py-1" id="tab12-link" href="#" onclick="showTab(9); return false;">
+        <i class="bi bi-fingerprint me-1"></i>M9: ตรวจสอบตาม PK
+      </a>
+    </li>
     <li style="flex-basis:100%;height:0;border:0;padding:0;margin:0;"></li>
     <li class="nav-item">
-      <a class="nav-link px-3 py-1" id="tab9-link" href="#" onclick="showTab(9); return false;">
-        <i class="bi bi-arrow-repeat me-1"></i>M9: Serial PG
+      <a class="nav-link px-3 py-1" id="tab9-link" href="#" onclick="showTab(10); return false;">
+        <i class="bi bi-arrow-repeat me-1"></i>M10: Serial PG
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link px-3 py-1" id="tab10-link" href="#" onclick="showTab(10); return false;">
-        <i class="bi bi-arrow-repeat me-1"></i>M10: Serial MySQL
+      <a class="nav-link px-3 py-1" id="tab10-link" href="#" onclick="showTab(11); return false;">
+        <i class="bi bi-arrow-repeat me-1"></i>M11: Serial MySQL
       </a>
     </li>
   </ul>
@@ -609,6 +618,64 @@
       </div>
     </div>
   </div><!-- /tab2 -->
+
+  <!-- ===== TAB 12: M9 ตรวจสอบตาม PK ===== -->
+  <div class="card tab-card" id="tab12-content"
+       style="display:none; border-radius:0 12px 12px 12px;">
+    <div class="card-body p-4">
+
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <h5 class="mb-1 fw-bold" style="font-size:1rem;">
+            <i class="bi bi-fingerprint me-2" style="color:#0d9488;"></i>
+            ตรวจสอบ PK ที่ขาดในปลายทาง — เลือกหมวดอักษรนำหน้า
+          </h5>
+          <p class="text-muted mb-0" style="font-size:.82rem;">
+            แสดงเฉพาะตารางที่มี PK ในต้นทาง <strong>ไม่มีอยู่ในปลายทาง</strong>
+            — คลิกชื่อตารางเพื่อดูรายการ PK ที่ขาด และเลือกนำเข้าทีละรายการ
+          </p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+          <div class="form-check mb-0">
+            <input class="form-check-input" type="checkbox" id="m9chk-all-tables"
+                   onchange="m9OnCheckAllTables()"
+                   style="border:2px solid #856404; width:1em; height:1em;">
+            <label class="form-check-label fw-bold" for="m9chk-all-tables" style="font-size:.82rem;">
+              <i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i>ทุกตาราง
+            </label>
+          </div>
+          <button class="btn btn-outline-secondary btn-sm" onclick="m9LoadPrefixes()">
+            <i class="bi bi-arrow-clockwise me-1"></i>โหลดรายการตัวอักษร
+          </button>
+        </div>
+      </div>
+
+      <div id="m9prefix-buttons-inline" class="d-flex flex-wrap gap-1 mb-3">
+        <span class="text-muted" style="font-size:0.85rem;">กด "โหลดรายการตัวอักษร" เพื่อเริ่มต้น</span>
+      </div>
+
+      <div id="m9prefix-results" style="display:none;" class="mt-1">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted" id="m9prefix-summary" style="font-size:0.75rem;"></span>
+          <span id="m9prefix-label" style="display:none;"></span>
+        </div>
+        <div class="scroll-table" style="max-height:620px;">
+          <table class="table table-sm table-hover table-bordered mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th class="text-center" style="width:36px; white-space:nowrap;">#</th>
+                <th style="white-space:nowrap;">ชื่อตาราง <small class="text-muted fw-normal">(คลิกเพื่อดู PK ที่ขาด)</small></th>
+                <th class="text-center" style="width:130px; white-space:nowrap;">ต้นทาง</th>
+                <th class="text-center" style="width:130px; white-space:nowrap;">ปลายทาง</th>
+                <th class="text-center" style="width:110px; white-space:nowrap; color:#e53935;">PK ขาด</th>
+              </tr>
+            </thead>
+            <tbody id="m9prefix-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div><!-- /tab12 -->
 
   <!-- ===== TAB 3: Assessment Tables (asm_) ===== -->
   <div class="card tab-card" id="tab3-content" style="border-radius:0 12px 12px 12px; display:none;">
@@ -1291,6 +1358,10 @@
           <button type="button" class="btn btn-info fw-semibold" id="modal-update-btn" onclick="updateChangedFromModal()" style="display:none;color:#fff;">
             <i class="bi bi-pencil-square me-1"></i>อัพเดทข้อมูลที่เปลี่ยนแปลง
           </button>
+          <button type="button" class="fw-semibold btn" id="modal-import-selected-btn"
+                  onclick="m9ImportSelected()" style="display:none;background:#0d9488;color:#fff;">
+            <i class="bi bi-box-arrow-in-down me-1"></i>นำเข้าที่เลือก
+          </button>
           <button type="button" class="btn btn-success" id="modal-export-btn" onclick="exportModalToXlsx()" style="display:none;">
             <i class="bi bi-file-earmark-excel me-1"></i>ส่งออก Excel
           </button>
@@ -1441,26 +1512,31 @@ function hideSpinner() { document.getElementById('spinner-overlay').style.displa
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 function showTab(n) {
   currentTab = n;
-  document.getElementById('tab1-content').style.display = n === 1 ? '' : 'none';
-  document.getElementById('tab2-content').style.display = n === 2 ? '' : 'none';
-  document.getElementById('tab3-content').style.display = n === 3 ? '' : 'none';
-  document.getElementById('tab4-content').style.display = n === 4 ? '' : 'none';
-  document.getElementById('tab5-content').style.display = n === 5 ? '' : 'none';
+  document.getElementById('tab1-content').style.display  = n === 1  ? '' : 'none';
+  document.getElementById('tab2-content').style.display  = n === 2  ? '' : 'none';
+  document.getElementById('tab3-content').style.display  = n === 3  ? '' : 'none';
+  document.getElementById('tab4-content').style.display  = n === 4  ? '' : 'none';
+  document.getElementById('tab5-content').style.display  = n === 5  ? '' : 'none';
   document.getElementById('tab1-link').classList.toggle('active', n === 1);
   document.getElementById('tab2-link').classList.toggle('active', n === 2);
   document.getElementById('tab3-link').classList.toggle('active', n === 3);
   document.getElementById('tab4-link').classList.toggle('active', n === 4);
   document.getElementById('tab5-link').classList.toggle('active', n === 5);
-  // M6=Log(tab8), M7=Image(tab9), M8=PPL(tab11), M9=PG Serial(tab6), M10=MySQL Serial(tab7)
+  // M6=Log(tab8), M7=Image(tab9), M8=PPL(tab11), M9=PK-check(tab12), M10=Serial PG(tab6), M11=Serial MySQL(tab7)
   document.getElementById('tab8-content').style.display  = n === 6  ? '' : 'none';
   document.getElementById('tab9-content').style.display  = n === 7  ? '' : 'none';
   document.getElementById('tab11-content').style.display = n === 8  ? '' : 'none';
-  document.getElementById('tab6-content').style.display  = n === 9  ? '' : 'none';
-  document.getElementById('tab7-content').style.display  = n === 10 ? '' : 'none';
-  [6,7,8,9,10].forEach(i =>
-    document.getElementById(`tab${i}-link`).classList.toggle('active', n === i));
-  if (n === 9)  { _seqInited  = false; initSeqTable();  }
-  if (n === 10) { _seq7Inited = false; initSeq7Table(); }
+  document.getElementById('tab12-content').style.display = n === 9  ? '' : 'none';
+  document.getElementById('tab6-content').style.display  = n === 10 ? '' : 'none';
+  document.getElementById('tab7-content').style.display  = n === 11 ? '' : 'none';
+  document.getElementById('tab6-link').classList.toggle('active',  n === 6);
+  document.getElementById('tab7-link').classList.toggle('active',  n === 7);
+  document.getElementById('tab8-link').classList.toggle('active',  n === 8);
+  document.getElementById('tab12-link').classList.toggle('active', n === 9);
+  document.getElementById('tab9-link').classList.toggle('active',  n === 10);
+  document.getElementById('tab10-link').classList.toggle('active', n === 11);
+  if (n === 10) { _seqInited  = false; initSeqTable();  }
+  if (n === 11) { _seq7Inited = false; initSeq7Table(); }
 }
 
 // ─── Port default when type changes ──────────────────────────────────────────
@@ -1811,7 +1887,7 @@ async function syncTable() {
   }
 }
 
-// ─── Menu 2: toggle collapse label ───────────────────────────────────────────
+// ─── Menu 2 & M9: toggle collapse label ─────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   const el = document.getElementById('prefix-controls');
   if (el) {
@@ -1822,13 +1898,23 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('btn-toggle-controls').innerHTML = '<i class="bi bi-chevron-down"></i> แสดง';
     });
   }
+  const m9el = document.getElementById('m9prefix-controls');
+  if (m9el) {
+    m9el.addEventListener('show.bs.collapse',   () => {
+      document.getElementById('m9btn-toggle-controls').innerHTML = '<i class="bi bi-chevron-up"></i> ซ่อน';
+    });
+    m9el.addEventListener('hidden.bs.collapse', () => {
+      document.getElementById('m9btn-toggle-controls').innerHTML = '<i class="bi bi-chevron-down"></i> แสดง';
+    });
+  }
 
   // เมื่อ browser auto-restore ค่า checkbox หลัง refresh ให้ sync สถานะ disable ด้วย
   [
-    { ids: _EXCL_IDS,      fn: selectExclusiveFilter      },
-    { ids: _ASM_EXCL_IDS,  fn: selectExclusiveAsmFilter   },
-    { ids: _IMG_EXCL_IDS,  fn: selectExclusiveImageFilter },
-    { ids: _LOG_EXCL_IDS,  fn: selectExclusiveLogFilter   },
+    { ids: _EXCL_IDS,     fn: selectExclusiveFilter      },
+    { ids: _ASM_EXCL_IDS, fn: selectExclusiveAsmFilter   },
+    { ids: _IMG_EXCL_IDS, fn: selectExclusiveImageFilter },
+    { ids: _LOG_EXCL_IDS, fn: selectExclusiveLogFilter   },
+    // M9 ไม่มี exclusive filter checkboxes
   ].forEach(({ ids, fn }) => {
     const checkedEl = ids.map(id => document.getElementById(id)).find(cb => cb && cb.checked);
     if (checkedEl) fn(checkedEl);
@@ -3432,6 +3518,303 @@ function exportPrefixToXlsx() {
   XLSX.utils.book_append_sheet(wb, _buildResultsSheet(data), 'ผลการตรวจสอบ');
   const prefix = document.getElementById('prefix-label').textContent || 'all';
   XLSX.writeFile(wb, `db_compare_${prefix.replace('...','')}_${_today()}.xlsx`);
+}
+
+// ─── Menu 9 (M9): ตรวจสอบ PK ที่ขาดในปลายทาง ────────────────────────────────
+let m9Results = [];
+const _M9_EXCL_IDS = [];   // M9 ไม่มี exclusive filter checkboxes
+function m9SelectExclusiveFilter() {}   // stub สำหรับ DOMContentLoaded
+
+function _m9Filter(results) {
+  // แสดงเฉพาะตารางที่มี PK ต้นทางไม่มีในปลายทาง (diff > 0)
+  return results.filter(r => r.status === 'diff' && r.diff > 0);
+}
+
+function _m9RenderRows(rows) {
+  const tbody = document.getElementById('m9prefix-tbody');
+  tbody.innerHTML = '';
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">ไม่พบตารางที่มี PK ขาด</td></tr>';
+    return;
+  }
+  rows.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="text-center text-muted" style="font-size:.8rem;">${i + 1}</td>
+      <td>
+        <a href="#" class="fw-semibold text-decoration-none" style="color:#0d9488;"
+           onclick="m9OpenMissingPks('${escHtml(r.table)}');return false;">
+          ${escHtml(r.table)}
+        </a>
+      </td>
+      <td class="text-end" style="color:#1565c0;">${fmtNum(r.src_count)}</td>
+      <td class="text-end" style="color:#2e7d32;">${fmtNum(r.dst_count)}</td>
+      <td class="text-end fw-bold" style="color:#e53935;">${fmtNum(r.diff)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function _m9SetSummary(prefix, allResults, shownRows) {
+  document.getElementById('m9prefix-label').textContent = prefix;
+  document.getElementById('m9prefix-summary').textContent =
+    `ตรวจสอบแล้ว ${allResults.length} ตาราง — พบ ${shownRows.length} ตารางที่มี PK ขาด`;
+}
+
+async function m9LoadPrefixes() {
+  m9Results = [];
+  document.getElementById('m9prefix-results').style.display = 'none';
+  document.getElementById('m9prefix-summary').textContent   = '';
+  document.getElementById('m9prefix-tbody').innerHTML       = '';
+  showSpinner();
+  try {
+    const data = await fetch('/api/tables').then(r => r.json());
+    if (data.status === 'error') { alert('โหลดไม่สำเร็จ: ' + data.message); return; }
+    const container = document.getElementById('m9prefix-buttons-inline');
+    container.innerHTML = '';
+    const prefixes = data.prefixes || [];
+    if (!prefixes.length) {
+      container.innerHTML = '<span class="text-muted">ไม่พบตารางใน Database</span>';
+      return;
+    }
+    prefixes.forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-outline-dark m9prefix-btn';
+      btn.style.cssText = 'min-width:46px;font-weight:600;font-size:.85rem;margin:2px;';
+      btn.textContent = p;
+      btn.onclick = () => m9CompareByPrefix(p);
+      container.appendChild(btn);
+    });
+  } catch (e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
+  finally { hideSpinner(); }
+}
+
+async function m9OnCheckAllTables() {
+  const checked = document.getElementById('m9chk-all-tables').checked;
+  if (!checked) return;
+  if (!confirm('ต้องการตรวจสอบทุกตารางใน Database ใช่หรือไม่?\nอาจใช้เวลานาน')) {
+    document.getElementById('m9chk-all-tables').checked = false;
+    return;
+  }
+  document.querySelectorAll('.m9prefix-btn').forEach(b => {
+    b.classList.remove('active-prefix','btn-dark'); b.classList.add('btn-outline-dark');
+  });
+  showSpinner();
+  document.getElementById('m9prefix-results').style.display = 'none';
+  try {
+    const data = await fetch('/api/compare-by-prefix', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ prefix: '' })
+    }).then(r => r.json());
+    if (data.status === 'error') { alert('เกิดข้อผิดพลาด: ' + data.message); return; }
+    m9Results = data.results || [];
+    const rows = _m9Filter(m9Results);
+    _m9RenderRows(rows);
+    _m9SetSummary('ทุกตาราง', m9Results, rows);
+    document.getElementById('m9prefix-results').style.display = '';
+  } catch (e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
+  finally { hideSpinner(); }
+}
+
+async function m9CompareByPrefix(prefix) {
+  document.querySelectorAll('.m9prefix-btn').forEach(b => {
+    b.classList.remove('active-prefix','btn-dark'); b.classList.add('btn-outline-dark');
+  });
+  const activeBtn = [...document.querySelectorAll('.m9prefix-btn')].find(b => b.textContent === prefix);
+  if (activeBtn) { activeBtn.classList.add('active-prefix','btn-dark'); activeBtn.classList.remove('btn-outline-dark'); }
+  showSpinner();
+  document.getElementById('m9prefix-results').style.display = 'none';
+  try {
+    const data = await fetch('/api/compare-by-prefix', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ prefix })
+    }).then(r => r.json());
+    if (data.status === 'error') { alert('เกิดข้อผิดพลาด: ' + data.message); return; }
+    m9Results = data.results || [];
+    const rows = _m9Filter(m9Results);
+    _m9RenderRows(rows);
+    _m9SetSummary(prefix + '...', m9Results, rows);
+    document.getElementById('m9prefix-results').style.display = '';
+  } catch (e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
+  finally { hideSpinner(); }
+}
+
+// ─── M9: เปิด modal แสดง PK ที่ขาด พร้อม checkbox ────────────────────────────
+let _m9ModalPks = [];   // PK column names ของตารางที่เปิดอยู่
+
+async function m9OpenMissingPks(tableName) {
+  modalTableName = tableName;
+  _m9ModalPks    = [];
+
+  document.getElementById('modal-table-title').textContent  = tableName;
+  document.getElementById('modal-table-counts').textContent = '';
+  document.getElementById('modal-alert').innerHTML          = '';
+  document.getElementById('modal-sync-result').innerHTML    = '';
+  document.getElementById('modal-footer-info').textContent  = '';
+  document.getElementById('modal-loading').style.display    = '';
+  document.getElementById('modal-table-wrap').style.display  = 'none';
+  document.getElementById('modal-sync-btn').style.display    = 'none';
+  document.getElementById('modal-update-btn').style.display  = 'none';
+  document.getElementById('modal-export-btn').style.display  = 'none';
+  document.getElementById('modal-import-selected-btn').style.display = 'none';
+  document.getElementById('modal-truncated-note').style.display = 'none';
+
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('tableDetailModal')).show();
+
+  try {
+    const data = await fetch('/api/compare-table', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ table: tableName, fetch_all: true })
+    }).then(r => r.json());
+
+    document.getElementById('modal-loading').style.display = 'none';
+
+    if (data.status === 'error') {
+      document.getElementById('modal-alert').innerHTML =
+        `<div class="alert alert-danger">${data.message}</div>`; return;
+    }
+    if (data.dst_table_missing) {
+      document.getElementById('modal-alert').innerHTML =
+        `<div class="alert alert-secondary">ตาราง <strong>${tableName}</strong> ไม่มีในปลายทาง</div>`; return;
+    }
+
+    document.getElementById('modal-table-counts').textContent =
+      `ต้นทาง: ${fmtNum(data.source_count)} | ปลายทาง: ${fmtNum(data.destination_count)} | PK ขาด: ${fmtNum(data.total_missing)}`;
+
+    // ตารางไม่มี PK
+    if (data.warning) {
+      document.getElementById('modal-alert').innerHTML =
+        `<div class="alert alert-warning"><i class="bi bi-exclamation-triangle-fill me-1"></i>${data.warning}</div>`;
+      return;
+    }
+
+    if (!data.missing_records || !data.missing_records.length) {
+      document.getElementById('modal-alert').innerHTML =
+        `<div class="alert alert-success"><i class="bi bi-check-circle-fill me-1"></i>ไม่พบ PK ที่ขาดในปลายทาง</div>`;
+      return;
+    }
+
+    // KEY FIX: response key คือ primary_keys ไม่ใช่ pks
+    _m9ModalPks = data.primary_keys || [];
+    _m9RenderMissingTable(data.columns, data.missing_records, _m9ModalPks);
+    document.getElementById('modal-table-wrap').style.display          = '';
+    document.getElementById('modal-import-selected-btn').style.display = '';
+    document.getElementById('modal-import-selected-btn').disabled      = false;
+    document.getElementById('modal-import-selected-btn').innerHTML     =
+      '<i class="bi bi-box-arrow-in-down me-1"></i>นำเข้าที่เลือก';
+    document.getElementById('modal-export-btn').style.display          = '';
+    document.getElementById('modal-footer-info').textContent =
+      `แสดง ${fmtNum(data.missing_records.length)} จากทั้งหมด ${fmtNum(data.total_missing)} PK ที่ขาด`;
+
+    if (data.total_missing > data.missing_records.length) {
+      const noteEl = document.getElementById('modal-truncated-note');
+      noteEl.style.display = '';
+      noteEl.textContent =
+        `* แสดงเฉพาะ ${fmtNum(data.missing_records.length)} รายการแรก — นำเข้าจะดำเนินการเฉพาะที่เลือก`;
+    }
+  } catch(e) {
+    document.getElementById('modal-loading').style.display = 'none';
+    document.getElementById('modal-alert').innerHTML =
+      `<div class="alert alert-danger">เกิดข้อผิดพลาด: ${e.message}</div>`;
+  }
+}
+
+function _m9RenderMissingTable(cols, records, pks) {
+  modalCurrentCols    = cols;      // ให้ exportModalToXlsx() ใช้ได้
+  modalCurrentRecords = records;
+
+  const thead = document.getElementById('modal-thead');
+  const tbody = document.getElementById('modal-tbody');
+
+  // Header row with Select All checkbox
+  const hRow = document.createElement('tr');
+  const thChk = document.createElement('th');
+  thChk.style.cssText = 'background:#0d9488;color:#fff;text-align:center;width:40px;';
+  const cbAll = document.createElement('input');
+  cbAll.type = 'checkbox'; cbAll.checked = true; cbAll.title = 'เลือก/ยกเลิกทั้งหมด';
+  cbAll.style.cssText = 'width:18px;height:18px;cursor:pointer;';
+  cbAll.addEventListener('change', () => {
+    tbody.querySelectorAll('.m9-row-cb').forEach(cb => cb.checked = cbAll.checked);
+  });
+  thChk.appendChild(cbAll);
+  hRow.appendChild(thChk);
+
+  cols.forEach(c => {
+    const th = document.createElement('th');
+    th.textContent = c;
+    if (pks.map(p => p.toLowerCase()).includes(c.toLowerCase()))
+      th.style.cssText = 'background:#e0f2f1;color:#004d40;';
+    hRow.appendChild(th);
+  });
+  thead.innerHTML = ''; thead.appendChild(hRow);
+
+  tbody.innerHTML = '';
+  records.forEach(rec => {
+    const tr = document.createElement('tr');
+
+    // Checkbox + pk data
+    const pkVals = pks.map(pk => {
+      const v = rec[pk.toLowerCase()] ?? rec[pk];
+      return v == null ? null : String(v);
+    });
+    const tdChk = document.createElement('td');
+    tdChk.style.cssText = 'text-align:center;vertical-align:middle;';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.className = 'm9-row-cb'; cb.checked = true;
+    cb.style.cssText = 'width:18px;height:18px;cursor:pointer;';
+    cb.dataset.pk = JSON.stringify(pkVals);
+    tdChk.appendChild(cb); tr.appendChild(tdChk);
+
+    cols.forEach(c => {
+      const td = document.createElement('td');
+      const v  = rec[c];
+      if (v === null || v === undefined) { td.innerHTML = '<span class="text-null">NULL</span>'; }
+      else { td.textContent = String(v); }
+      if (pks.map(p => p.toLowerCase()).includes(c.toLowerCase()))
+        td.style.cssText = 'background:#e8f5e9;font-weight:600;';
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+async function m9ImportSelected() {
+  const checkedCbs = document.querySelectorAll('#modal-tbody .m9-row-cb:checked');
+  if (!checkedCbs.length) {
+    document.getElementById('modal-sync-result').innerHTML =
+      `<div class="alert alert-warning py-1 mb-0">กรุณาเลือกอย่างน้อย 1 รายการ</div>`; return;
+  }
+  const selectedPks = Array.from(checkedCbs).map(cb => JSON.parse(cb.dataset.pk));
+  if (!confirm(`นำเข้า ${selectedPks.length} รายการที่เลือกไปยังปลายทาง?`)) return;
+
+  const btn = document.getElementById('modal-import-selected-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>กำลังนำเข้า...';
+
+  try {
+    const data = await fetch('/api/sync-selected-pks', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ table: modalTableName, selected_pks: selectedPks })
+    }).then(r => r.json());
+
+    if (data.status === 'ok') {
+      document.getElementById('modal-sync-result').innerHTML =
+        `<div class="alert alert-success py-1 mb-0">
+          <i class="bi bi-check-circle-fill me-1"></i>
+          นำเข้าสำเร็จ ${data.inserted} รายการ${data.skipped ? ` (ข้าม ${data.skipped})` : ''}
+        </div>`;
+      // ซ่อน checkbox ของ row ที่ import สำเร็จ
+      checkedCbs.forEach(cb => cb.closest('tr').style.opacity = '0.4');
+    } else {
+      document.getElementById('modal-sync-result').innerHTML =
+        `<div class="alert alert-danger py-1 mb-0">ผิดพลาด: ${data.message}</div>`;
+    }
+  } catch(e) {
+    document.getElementById('modal-sync-result').innerHTML =
+      `<div class="alert alert-danger py-1 mb-0">เกิดข้อผิดพลาด: ${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-box-arrow-in-down me-1"></i>นำเข้าที่เลือก';
+  }
 }
 
 function exportAsmToXlsx() {
