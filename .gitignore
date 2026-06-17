@@ -32,6 +32,10 @@ Thumbs.db
 dist/
 build/
 installer_output/
+
+# Bundled redistributables (large binaries — not in git, bundled at build time)
+installer/redist/
+
 *.spec.log
 
 # IDE
