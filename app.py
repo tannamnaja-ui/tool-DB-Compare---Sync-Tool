@@ -622,6 +622,14 @@ def fetch_records_by_pks(conn, db_type, table_name, pks, pk_values):
     return records, col_names
 
 
+@app.after_request
+def add_no_cache_headers(response):
+    # ป้องกัน browser cache หน้าเก่าไว้ข้ามเวอร์ชัน exe (ทำให้ JS fix ใหม่ๆ ไม่ถูกโหลด)
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    return response
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
