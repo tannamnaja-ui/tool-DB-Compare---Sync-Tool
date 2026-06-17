@@ -89,23 +89,41 @@ begin
 end;
 
 { ─────────────────────────────────────────────────────────────────────────────
-  Ask user before re-installing over an existing installation.
+  Read the previous version's UninstallString from the registry, if any.
+  ───────────────────────────────────────────────────────────────────────────── }
+function GetUninstallString(): String;
+var
+  sUnInstPath: String;
+  sUnInstallString: String;
+begin
+  sUnInstPath := 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\' +
+                 '{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}_is1';
+  sUnInstallString := '';
+  if not RegQueryStringValue(HKEY_LOCAL_MACHINE, sUnInstPath, 'UninstallString', sUnInstallString) then
+    RegQueryStringValue(HKEY_CURRENT_USER, sUnInstPath, 'UninstallString', sUnInstallString);
+  Result := sUnInstallString;
+end;
+
+{ ─────────────────────────────────────────────────────────────────────────────
+  Force-close any running instance, then silently uninstall the previous
+  version (if found) before installing — no prompt, fully automatic.
   ───────────────────────────────────────────────────────────────────────────── }
 function InitializeSetup(): Boolean;
 var
-  Version: String;
+  ResultCode:      Integer;
+  UninstallString: String;
 begin
   Result := True;
-  if RegQueryStringValue(HKEY_LOCAL_MACHINE,
-       'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\' +
-       '{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}_is1',
-       'DisplayVersion', Version) then
+
+  { Force-close the app in case it's running an old build without AppMutex support }
+  Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM "{#MyAppExeName}"', '',
+       SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+  UninstallString := GetUninstallString();
+  if UninstallString <> '' then
   begin
-    if MsgBox('พบการติดตั้ง ' + '{#MyAppName}' + ' เวอร์ชัน ' + Version +
-              ' อยู่แล้ว' + #13#10 + 'ต้องการติดตั้งทับใหม่หรือไม่?',
-              mbConfirmation, MB_YESNO) = IDNO then
-    begin
-      Result := False;
-    end;
+    UninstallString := RemoveQuotes(UninstallString);
+    Exec(UninstallString, '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART', '',
+         SW_HIDE, ewWaitUntilTerminated, ResultCode);
   end;
 end;
