@@ -1720,6 +1720,8 @@ function escHtml(s) {
 async function loadTables() {
   showSpinner();
   try {
+    // auto-save current form config so /api/tables always reads fresh credentials
+    await saveConfig();
     const res  = await fetch('/api/tables');
     const data = await res.json();
     if (data.status === 'error') { alert('โหลดตารางไม่สำเร็จ: ' + data.message); return; }
