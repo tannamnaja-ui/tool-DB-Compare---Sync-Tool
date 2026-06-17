@@ -1585,11 +1585,15 @@ async function saveConfig() {
     source:      getDbConfig('source'),
     destination: getDbConfig('destination')
   };
-  await fetch('/api/config', {
+  const res = await fetch('/api/config', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(config)
   });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.status === 'error') {
+    throw new Error(data.message || 'บันทึก config ไม่สำเร็จ');
+  }
 }
 
 // ─── Save config ทีละ side ───────────────────────────────────────────────────
@@ -1607,15 +1611,19 @@ async function saveConfigSide(side) {
 
   statusEl.innerHTML = '<span class="text-muted"><span class="spinner-border spinner-border-sm"></span></span>';
   try {
-    await fetch('/api/config', {
+    const res = await fetch('/api/config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(current)
     });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.status === 'error') {
+      throw new Error(data.message || 'บันทึกไม่สำเร็จ');
+    }
     statusEl.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill"></i> บันทึกสำเร็จ</span>';
     setTimeout(() => { statusEl.innerHTML = ''; }, 3000);
   } catch (e) {
-    statusEl.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle-fill"></i> บันทึกไม่สำเร็จ</span>';
+    statusEl.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle-fill"></i> ' + e.message + '</span>';
   }
 }
 

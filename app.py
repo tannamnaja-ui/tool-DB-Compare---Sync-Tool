@@ -28,10 +28,21 @@ def _base_dir():
     return os.path.dirname(os.path.abspath(__file__))
 
 
+def _config_dir():
+    """ใช้ %LOCALAPPDATA% เก็บ config — เขียนได้โดยไม่ต้องสิทธิ์ admin
+    (ต่างจากโฟลเดอร์ exe ที่อาจอยู่ใน Program Files ซึ่งต้องเป็น admin ถึงเขียนได้)"""
+    if getattr(sys, 'frozen', False):
+        base = os.environ.get('LOCALAPPDATA') or _base_dir()
+        path = os.path.join(base, 'DBCompareSyncTool')
+        os.makedirs(path, exist_ok=True)
+        return path
+    return _base_dir()
+
+
 MAX_WORKERS = 6  # parallel DB connections per side
 
 app = Flask(__name__, template_folder=_resource_path('templates'))
-CONFIG_FILE = os.path.join(_base_dir(), 'config.json')
+CONFIG_FILE = os.path.join(_config_dir(), 'config.json')
 MAX_DISPLAY_RECORDS = 500
 
 
@@ -643,7 +654,10 @@ def get_config():
 @app.route('/api/config', methods=['POST'])
 def save_config_route():
     config = request.json
-    save_config_to_file(config)
+    try:
+        save_config_to_file(config)
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 400
     return jsonify({'status': 'ok'})
 
 
