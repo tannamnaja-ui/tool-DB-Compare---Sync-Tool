@@ -4,6 +4,15 @@ import threading
 import webbrowser
 import socket
 import time
+import ctypes
+
+
+APP_MUTEX_NAME = 'DBCompareSyncToolMutex'
+
+
+def acquire_app_mutex():
+    """สร้าง named mutex ไว้ให้ installer (AppMutex) ตรวจสอบว่าโปรแกรมกำลังรันอยู่หรือไม่"""
+    ctypes.windll.kernel32.CreateMutexW(None, False, APP_MUTEX_NAME)
 
 
 def is_port_open(port):
@@ -75,6 +84,7 @@ if __name__ == '__main__':
             webbrowser.open('http://127.0.0.1:8000')
             sys.exit(0)
 
+        acquire_app_mutex()
         port = find_free_port(8000)
 
         flask_thread = threading.Thread(
